@@ -1,13 +1,34 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
+import { redis } from "@/lib/redis";
 import { PostCard } from "@/components/blog/post-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { SITE } from "@/lib/constants";
 
-export default function Home() {
-  const posts = getAllPosts();
-  const featured = posts.find((p) => p.frontmatter.featured);
-  const latest = posts.slice(0, 6);
+export const revalidate = 60;
+
+async function getFeaturedPost() {
+  // Use Redis sorted set to pick the most-viewed post as featured
+  if (redis) {
+    try {
+      const topSlugs = await redis.zrange("posts:views", 0, 0, { rev: true });
+      if (topSlugs.length > 0) {
+        const all = await getAllPosts();
+        const featured = all.find((p) => p.slug === topSlugs[0]);
+        if (featured) return featured;
+      }
+    } catch {
+      // fall through to fallback
+    }
+  }
+  // Fallback: most recent post
+  const all = await getAllPosts();
+  return all[0] ?? null;
+}
+
+export default async function Home() {
+  const [allPosts, featured] = await Promise.all([getAllPosts(), getFeaturedPost()]);
+  const latest = allPosts.slice(0, 6);
 
   return (
     <div className="mx-auto max-w-6xl px-6">
@@ -23,7 +44,7 @@ export default function Home() {
             {SITE.description}
           </p>
         </ScrollReveal>
-        <ScrollReveal delay={0.3}>
+        <ScrollReveal delay={0.2}>
           <div className="flex gap-4 mt-8">
             <Link
               href="/blog"
@@ -72,28 +93,36 @@ export default function Home() {
       )}
 
       {/* Latest Posts */}
-      <section className="pb-24">
-        <ScrollReveal>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-medium text-muted uppercase tracking-wider">
-              Latest Posts
-            </h2>
-            <Link
-              href="/blog"
-              className="text-sm text-accent-blue hover:text-accent-purple transition-colors"
-            >
-              View all &rarr;
-            </Link>
+      {latest.length > 0 && (
+        <section className="pb-24">
+          <ScrollReveal>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-sm font-medium text-muted uppercase tracking-wider">
+                Latest Posts
+              </h2>
+              <Link
+                href="/blog"
+                className="text-sm text-accent-blue hover:text-accent-purple transition-colors"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+          </ScrollReveal>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latest.map((post, i) => (
+              <ScrollReveal key={post.slug} delay={i * 0.08}>
+                <PostCard post={post} />
+              </ScrollReveal>
+            ))}
           </div>
-        </ScrollReveal>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {latest.map((post, i) => (
-            <ScrollReveal key={post.slug} delay={i * 0.1}>
-              <PostCard post={post} />
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
+        </section>
+      )}
+
+      {latest.length === 0 && (
+        <section className="pb-24 text-center py-16">
+          <p className="text-secondary">No posts yet. Head to the <Link href="/admin" className="text-accent-blue">admin panel</Link> to write your first one.</p>
+        </section>
+      )}
     </div>
   );
 }

@@ -55,12 +55,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const posts = getAllPosts().map((p) => ({
+  // Fetch posts for command palette — cached per-request via React cache()
+  const allPosts = await getAllPosts().catch(() => []);
+  const posts = allPosts.map((p) => ({
     slug: p.slug,
     title: p.frontmatter.title,
     description: p.frontmatter.description,

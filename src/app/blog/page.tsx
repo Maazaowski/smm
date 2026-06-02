@@ -4,14 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Blog",
-  description: "Stories, insights, and tech news from the engineering trenches.",
+  description: "Stories, insights, and reactions to tech news.",
 };
 
-export default function BlogPage() {
-  const posts = getAllPosts();
-  const tags = getAllTags();
+export default async function BlogPage() {
+  const [posts, tags] = await Promise.all([getAllPosts(), getAllTags()]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
@@ -24,7 +25,6 @@ export default function BlogPage() {
         </p>
       </header>
 
-      {/* Tags */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-12">
           {tags.map(({ tag, count }) => (
@@ -37,16 +37,15 @@ export default function BlogPage() {
         </div>
       )}
 
-      {/* Posts Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post) => (
-          <PostCard key={post.slug} post={post} />
-        ))}
-      </div>
-
-      {posts.length === 0 && (
+      {posts.length > 0 ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <PostCard key={post.slug} post={post} />
+          ))}
+        </div>
+      ) : (
         <p className="text-center text-secondary py-16">
-          No posts yet. Check back soon!
+          No posts yet. Check back soon.
         </p>
       )}
     </div>

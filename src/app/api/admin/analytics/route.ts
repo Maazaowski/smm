@@ -11,10 +11,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const posts = getAllPosts();
+  const posts = await getAllPosts(true); // include drafts in analytics
 
   if (!redis) {
-    // Return empty data when Redis is not configured
     return NextResponse.json({
       totalViews: 0,
       totalReactions: 0,
@@ -30,17 +29,11 @@ export async function GET() {
     });
   }
 
-  // Fetch stats for each post — redis is guaranteed non-null here (early return above)
-  const r = redis!;
+  const r = redis;
   const postStats = await Promise.all(
     posts.map(async (post) => {
       const views = (await r.get<number>(`views:${post.slug}`)) ?? 0;
-      const reactions =
-        (await r.hgetall(`reactions:${post.slug}`)) as Record<
-          string,
-          number
-        > | null;
-
+      const reactions = (await r.hgetall(`reactions:${post.slug}`)) as Record<string, number> | null;
       return {
         slug: post.slug,
         title: post.frontmatter.title,
@@ -57,16 +50,10 @@ export async function GET() {
 
   const totalViews = postStats.reduce((sum, p) => sum + p.views, 0);
   const totalReactions = postStats.reduce(
-    (sum, p) =>
-      sum +
-      p.reactions.fire +
-      p.reactions.heart +
-      p.reactions.mindblown +
-      p.reactions.idea,
+    (sum, p) => sum + p.reactions.fire + p.reactions.heart + p.reactions.mindblown + p.reactions.idea,
     0
   );
 
-  // Fetch daily views for last 30 days
   const dailyViews: { date: string; views: number }[] = [];
   for (let i = 29; i >= 0; i--) {
     const d = new Date();

@@ -1,8 +1,10 @@
 import { getAllPosts } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
 
+export const revalidate = 3600;
+
 export async function GET() {
-  const posts = getAllPosts();
+  const posts = await getAllPosts();
 
   const items = posts
     .map(

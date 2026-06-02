@@ -1,101 +1,139 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { cache } from "react";
+import { eq, desc, and } from "drizzle-orm";
+import { db } from "./db";
+import { posts } from "./db/schema";
 import readingTime from "reading-time";
-import type { Post, PostFrontmatter } from "./types";
+import type { Post } from "./types";
+import type { DbPost } from "./db/schema";
 
-const POSTS_DIR = path.join(process.cwd(), "content", "posts");
-
-function getFilesRecursive(dir: string): string[] {
-  if (!fs.existsSync(dir)) return [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const files: string[] = [];
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name !== "drafts") {
-        files.push(...getFilesRecursive(fullPath));
-      }
-    } else if (entry.name.endsWith(".mdx")) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-}
-
-function parsePost(filePath: string): Post {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(raw);
-  const frontmatter = data as PostFrontmatter;
-  const slug = path.basename(filePath, ".mdx");
-  const stats = readingTime(content);
-
+// Map a DB row into the Post shape used throughout the app
+function dbToPost(p: DbPost): Post {
+  const rt = readingTime(p.content);
   return {
-    slug,
-    frontmatter,
-    content,
-    readingTime: stats.text,
-    wordCount: stats.words,
+    slug: p.slug,
+    frontmatter: {
+      title: p.title,
+      description: p.description,
+      date: p.publishedAt.toISOString().split("T")[0],
+      updated: p.updatedAt?.toISOString().split("T")[0],
+      tags: p.tags,
+      category: p.category,
+      draft: p.draft,
+    },
+    content: p.content,
+    readingTime: rt.text,
+    wordCount: rt.words,
   };
 }
 
-export function getAllPosts(): Post[] {
-  const files = getFilesRecursive(POSTS_DIR);
-  const posts = files.map(parsePost);
+// cache() deduplicates calls within the same request (avoids N+1 on layout + page)
+export const getAllPosts = cache(async (includeDrafts = false): Promise<Post[]> => {
+  if (!db) return [];
+  const rows = includeDrafts
+    ? await db.select().from(posts).orderBy(desc(posts.publishedAt))
+    : await db.select().from(posts).where(eq(posts.draft, false)).orderBy(desc(posts.publishedAt));
+  return rows.map(dbToPost);
+});
 
-  const filtered =
-    process.env.NODE_ENV === "production"
-      ? posts.filter((p) => !p.frontmatter.draft)
-      : posts;
+export const getPostBySlug = cache(
+  async (slug: string, includeDrafts = false): Promise<Post | null> => {
+    if (!db) return null;
+    const rows = includeDrafts
+      ? await db.select().from(posts).where(eq(posts.slug, slug)).limit(1)
+      : await db.select().from(posts)
+          .where(and(eq(posts.slug, slug), eq(posts.draft, false)))
+          .limit(1);
+    return rows[0] ? dbToPost(rows[0]) : null;
+  }
+);
 
-  return filtered.sort(
-    (a, b) =>
-      new Date(b.frontmatter.date).getTime() -
-      new Date(a.frontmatter.date).getTime()
-  );
-}
-
-export function getPostBySlug(slug: string): Post | undefined {
-  return getAllPosts().find((p) => p.slug === slug);
-}
-
-export function getPostsByTag(tag: string): Post[] {
-  return getAllPosts().filter((p) =>
+export async function getPostsByTag(tag: string): Promise<Post[]> {
+  const all = await getAllPosts();
+  return all.filter((p) =>
     p.frontmatter.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase())
   );
 }
 
-export function getAllTags(): { tag: string; count: number }[] {
+export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
+  if (!db) return [];
+  const rows = await db
+    .select({ tags: posts.tags })
+    .from(posts)
+    .where(eq(posts.draft, false));
+
   const tagMap = new Map<string, number>();
-  for (const post of getAllPosts()) {
-    for (const tag of post.frontmatter.tags) {
+  for (const row of rows) {
+    for (const tag of row.tags) {
       const lower = tag.toLowerCase();
-      tagMap.set(lower, (tagMap.get(lower) || 0) + 1);
+      tagMap.set(lower, (tagMap.get(lower) ?? 0) + 1);
     }
   }
+
   return Array.from(tagMap.entries())
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => b.count - a.count);
 }
 
-export function getRelatedPosts(currentSlug: string, limit = 3): Post[] {
-  const current = getPostBySlug(currentSlug);
+export async function getRelatedPosts(currentSlug: string, limit = 3): Promise<Post[]> {
+  const current = await getPostBySlug(currentSlug);
   if (!current) return [];
 
-  const posts = getAllPosts().filter((p) => p.slug !== currentSlug);
-
-  const scored = posts.map((post) => {
-    let score = 0;
-    for (const tag of post.frontmatter.tags) {
-      if (current.frontmatter.tags.includes(tag)) score += 3;
-    }
-    if (post.frontmatter.category === current.frontmatter.category) score += 2;
-    return { post, score };
-  });
-
-  return scored
-    .filter((s) => s.score > 0)
+  const all = await getAllPosts();
+  return all
+    .filter((p) => p.slug !== currentSlug)
+    .map((p) => {
+      let score = 0;
+      for (const tag of p.frontmatter.tags) {
+        if (current.frontmatter.tags.includes(tag)) score += 3;
+      }
+      if (p.frontmatter.category === current.frontmatter.category) score += 2;
+      return { p, score };
+    })
+    .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-    .map((s) => s.post);
+    .map((x) => x.p);
+}
+
+// --- Write operations (used by admin panel) ---
+
+export async function createPost(data: {
+  slug: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  tags: string[];
+  draft: boolean;
+  publishedAt?: Date;
+}): Promise<Post> {
+  if (!db) throw new Error("DATABASE_URL is not configured.");
+  const rows = await db.insert(posts).values(data).returning();
+  return dbToPost(rows[0]);
+}
+
+export async function updatePost(
+  slug: string,
+  data: {
+    title?: string;
+    description?: string;
+    content?: string;
+    category?: string;
+    tags?: string[];
+    draft?: boolean;
+  }
+): Promise<Post | null> {
+  if (!db) throw new Error("DATABASE_URL is not configured.");
+  const rows = await db
+    .update(posts)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(posts.slug, slug))
+    .returning();
+  return rows[0] ? dbToPost(rows[0]) : null;
+}
+
+export async function deletePost(slug: string): Promise<boolean> {
+  if (!db) throw new Error("DATABASE_URL is not configured.");
+  const rows = await db.delete(posts).where(eq(posts.slug, slug)).returning();
+  return rows.length > 0;
 }

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAllPosts, getPostBySlug } from "@/lib/posts";
+import { getAllPosts, getPostBySlug, getRelatedPosts } from "@/lib/posts";
 import { renderMDX } from "@/lib/mdx";
 import { extractHeadings } from "@/lib/toc";
 import { PostHeader } from "@/components/blog/post-header";
@@ -10,24 +10,29 @@ import { Reactions } from "@/components/blog/reactions";
 import { ViewCounter } from "@/components/blog/view-counter";
 import { GiscusComments } from "@/components/blog/giscus-comments";
 import { TableOfContents } from "@/components/blog/table-of-contents";
+import { PostCard } from "@/components/blog/post-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { SITE } from "@/lib/constants";
+
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// Pre-render existing posts at build time; new posts render on first request
 export async function generateStaticParams() {
-  return getAllPosts().map((post) => ({ slug: post.slug }));
+  try {
+    const posts = await getAllPosts();
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
 }
 
-export const dynamicParams = false;
-
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return {};
 
   const { frontmatter } = post;
@@ -62,7 +67,11 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const [post, related] = await Promise.all([
+    getPostBySlug(slug),
+    getRelatedPosts(slug),
+  ]);
+
   if (!post) notFound();
 
   const content = await renderMDX(post.content);
@@ -77,13 +86,8 @@ export default async function BlogPostPage({ params }: PageProps) {
             <PostHeader post={post} />
           </ScrollReveal>
 
-          {/* View counter */}
           <div className="mb-8">
-            <Suspense
-              fallback={
-                <span className="text-muted text-sm">Loading views...</span>
-              }
-            >
+            <Suspense fallback={<span className="text-muted text-sm">...</span>}>
               <ViewCounter slug={slug} />
             </Suspense>
           </div>
@@ -92,18 +96,29 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className="prose">{content}</div>
           </ScrollReveal>
 
-          {/* Reactions */}
           <div className="mt-12">
             <Reactions slug={slug} />
           </div>
 
-          {/* Share */}
           <footer className="mt-8 pt-8 border-t border-glass-border">
             <ShareButtons title={post.frontmatter.title} slug={slug} />
           </footer>
 
-          {/* Comments */}
           <GiscusComments slug={slug} />
+
+          {/* Related Posts */}
+          {related.length > 0 && (
+            <section className="mt-16 pt-8 border-t border-glass-border">
+              <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
+                Related Posts
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {related.map((p) => (
+                  <PostCard key={p.slug} post={p} />
+                ))}
+              </div>
+            </section>
+          )}
         </article>
 
         {/* Sidebar TOC */}

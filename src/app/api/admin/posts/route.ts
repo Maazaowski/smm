@@ -1,70 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
-import { getAllPosts } from "@/lib/posts";
-import { Octokit } from "@octokit/rest";
-import fs from "fs";
-import path from "path";
+import { getAllPosts, createPost } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const isAuth = await verifyAuth();
-  if (!isAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!isAuth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const posts = getAllPosts().map((p) => ({
+  const all = await getAllPosts(true); // include drafts for admin
+  const mapped = all.map((p) => ({
     slug: p.slug,
     title: p.frontmatter.title,
     date: p.frontmatter.date,
-    draft: p.frontmatter.draft || false,
+    draft: p.frontmatter.draft ?? false,
     category: p.frontmatter.category,
   }));
 
-  return NextResponse.json({ posts });
-}
-
-function buildMDX(params: {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  category: string;
-  draft: boolean;
-  content: string;
-  featured?: boolean;
-}) {
-  const frontmatter = [
-    "---",
-    `title: "${params.title}"`,
-    `description: "${params.description}"`,
-    `date: "${params.date}"`,
-    `tags: [${params.tags.map((t) => `"${t}"`).join(", ")}]`,
-    `category: "${params.category}"`,
-    `featured: ${params.featured ?? false}`,
-    `draft: ${params.draft}`,
-    "---",
-  ].join("\n");
-
-  return `${frontmatter}\n\n${params.content}`;
+  return NextResponse.json({ posts: mapped });
 }
 
 export async function POST(request: NextRequest) {
   const isAuth = await verifyAuth();
-  if (!isAuth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!isAuth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const {
-    slug,
-    title,
-    description,
-    category,
-    tags,
-    draft,
-    body: content,
-  } = body as {
+  const { slug, title, description, category, tags, draft, body: content, publishedAt } = body as {
     slug: string;
     title: string;
     description: string;
@@ -72,75 +33,32 @@ export async function POST(request: NextRequest) {
     tags: string[];
     draft: boolean;
     body: string;
+    publishedAt?: string;
   };
 
   if (!slug || !title || !description) {
-    return NextResponse.json(
-      { error: "slug, title and description are required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "slug, title, and description are required" }, { status: 400 });
   }
-
-  const date = new Date().toISOString().split("T")[0];
-  const year = date.split("-")[0];
-  const filePath = `content/posts/${year}/${slug}.mdx`;
-  const fileContent = buildMDX({
-    title,
-    description,
-    date,
-    tags: tags || [],
-    category,
-    draft,
-    content: content || "",
-  });
-
-  const token = process.env.GITHUB_TOKEN;
-  const isVercel = !!process.env.VERCEL;
-
-  // On Vercel without a token — filesystem is read-only, must use GitHub API
-  if (!token && isVercel) {
-    return NextResponse.json(
-      { error: "GITHUB_TOKEN is not set. Add it in Vercel → Settings → Environment Variables." },
-      { status: 500 }
-    );
-  }
-
-  // Local dev — write directly to disk
-  if (!token) {
-    try {
-      const absPath = path.join(process.cwd(), filePath);
-      fs.mkdirSync(path.dirname(absPath), { recursive: true });
-      fs.writeFileSync(absPath, fileContent, "utf-8");
-      return NextResponse.json({ success: true, slug });
-    } catch (err) {
-      return NextResponse.json(
-        { error: "Failed to write file", details: String(err) },
-        { status: 500 }
-      );
-    }
-  }
-
-  // Production — commit via GitHub API
-  const octokit = new Octokit({ auth: token });
-  const owner = process.env.GITHUB_OWNER ?? "Maazaowski";
-  const repo = process.env.GITHUB_REPO ?? "smm";
 
   try {
-    await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: filePath,
-      message: `feat: add post "${title}"`,
-      content: Buffer.from(fileContent).toString("base64"),
+    const post = await createPost({
+      slug,
+      title,
+      description,
+      content: content ?? "",
+      category,
+      tags: tags ?? [],
+      draft,
+      publishedAt: publishedAt ? new Date(publishedAt) : undefined,
     });
-    return NextResponse.json({ success: true, slug });
+    return NextResponse.json({ success: true, slug: post.slug });
   } catch (err: unknown) {
-    const status = (err as { status?: number })?.status;
     const message = (err as { message?: string })?.message ?? String(err);
-    console.error("[admin/posts POST] GitHub API error:", { status, message, owner, repo, filePath });
-    return NextResponse.json(
-      { error: `GitHub API error (${status ?? "?"}): ${message}` },
-      { status: 500 }
-    );
+    // Handle unique constraint violation (slug already exists)
+    if (message.includes("unique") || message.includes("duplicate")) {
+      return NextResponse.json({ error: "A post with this slug already exists." }, { status: 409 });
+    }
+    console.error("[admin/posts POST]", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
