@@ -95,6 +95,15 @@ export async function POST(request: NextRequest) {
   });
 
   const token = process.env.GITHUB_TOKEN;
+  const isVercel = !!process.env.VERCEL;
+
+  // On Vercel without a token — filesystem is read-only, must use GitHub API
+  if (!token && isVercel) {
+    return NextResponse.json(
+      { error: "GITHUB_TOKEN is not set. Add it in Vercel → Settings → Environment Variables." },
+      { status: 500 }
+    );
+  }
 
   // Local dev — write directly to disk
   if (!token) {

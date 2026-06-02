@@ -115,9 +115,12 @@ export function AdminPanel() {
       if (res.ok) {
         setShowEditor(false);
         fetchPosts();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`Failed to save post: ${data.error ?? res.statusText}`);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      alert(`Error: ${String(err)}`);
     } finally {
       setSaving(false);
     }

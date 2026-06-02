@@ -78,6 +78,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const filePath = `content/posts/${year}/${slug}.mdx`;
 
   const token = process.env.GITHUB_TOKEN;
+  const isVercel = !!process.env.VERCEL;
+
+  if (!token && isVercel) {
+    return NextResponse.json(
+      { error: "GITHUB_TOKEN is not set. Add it in Vercel → Settings → Environment Variables." },
+      { status: 500 }
+    );
+  }
 
   // Local dev — write directly to disk
   if (!token) {
@@ -140,6 +148,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const filePath = `content/posts/${year}/${slug}.mdx`;
 
   const token = process.env.GITHUB_TOKEN;
+  const isVercel = !!process.env.VERCEL;
+
+  if (!token && isVercel) {
+    return NextResponse.json(
+      { error: "GITHUB_TOKEN is not set. Add it in Vercel → Settings → Environment Variables." },
+      { status: 500 }
+    );
+  }
 
   // Local dev — delete from disk
   if (!token) {
