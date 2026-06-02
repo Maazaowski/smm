@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   /* Fonts */
   --font-sans: var(--font-inter);
@@ -12,7 +14,11 @@
   --color-surface-2: oklch(0.20 0.015 260);
   --color-glass-bg: oklch(0.15 0.01 260 / 0.6);
   --color-glass-border: oklch(1 0 0 / 0.08);
+  --color-glass-border-hover: oklch(1 0 0 / 0.15);
   --color-glass-glow: oklch(0.65 0.15 250 / 0.15);
+  --color-code-bg: oklch(0.13 0.01 260);
+  --color-code-border: oklch(1 0 0 / 0.08);
+  --color-overlay: oklch(0 0 0 / 0.5);
   --color-primary: oklch(0.95 0.005 260);
   --color-secondary: oklch(0.65 0.01 260);
   --color-muted: oklch(0.45 0.01 260);
@@ -48,11 +54,17 @@
     --color-surface-1: oklch(0.94 0.005 260);
     --color-surface-2: oklch(0.91 0.005 260);
     --color-glass-bg: oklch(1 0 0 / 0.7);
-    --color-glass-border: oklch(0 0 0 / 0.08);
+    --color-glass-border: oklch(0 0 0 / 0.1);
+    --color-glass-border-hover: oklch(0 0 0 / 0.2);
     --color-glass-glow: oklch(0.65 0.15 250 / 0.1);
     --color-primary: oklch(0.15 0.01 260);
     --color-secondary: oklch(0.40 0.01 260);
     --color-muted: oklch(0.55 0.01 260);
+    --color-code-bg: oklch(0.96 0.005 260);
+    --color-code-border: oklch(0 0 0 / 0.1);
+    --color-overlay: oklch(0 0 0 / 0.3);
+    --color-accent-blue: oklch(0.55 0.18 250);
+    --color-accent-purple: oklch(0.50 0.22 300);
   }
 }
 

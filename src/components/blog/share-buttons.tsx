@@ -39,19 +39,19 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
       <span className="text-sm text-muted">Share:</span>
       <button
         onClick={shareLinkedIn}
-        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
       >
         LinkedIn
       </button>
       <button
         onClick={shareTwitter}
-        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
       >
         Twitter
       </button>
       <button
         onClick={copyLink}
-        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+        className="rounded-full border border-glass-border bg-glass-bg px-4 py-1.5 text-sm text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
       >
         {copied ? "Copied!" : "Copy Link"}
       </button>

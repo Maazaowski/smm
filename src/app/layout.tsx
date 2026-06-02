@@ -76,7 +76,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {/* Background gradient blobs */}
-          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none hidden dark:block">
             <div className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,oklch(0.45_0.15_280/0.15),transparent_70%)]" />
             <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,oklch(0.45_0.12_230/0.1),transparent_70%)]" />
           </div>

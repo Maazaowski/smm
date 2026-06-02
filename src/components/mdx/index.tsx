@@ -18,7 +18,7 @@ export const mdxComponents: MDXComponents = {
     <img
       {...props}
       alt={props.alt || ""}
-      className="rounded-xl border border-white/[0.08] my-8"
+      className="rounded-xl border border-glass-border my-8"
       loading="lazy"
     />
   ),

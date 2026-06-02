@@ -31,7 +31,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-glass-border bg-glass-bg hover:border-white/[0.15] transition-all"
+      className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-glass-border bg-glass-bg hover:border-glass-border-hover transition-all"
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
       <AnimatePresence mode="wait" initial={false}>

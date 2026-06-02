@@ -33,7 +33,7 @@ export default function Home() {
             </Link>
             <Link
               href="/about"
-              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
             >
               About Me
             </Link>
@@ -51,7 +51,7 @@ export default function Home() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <Link href={`/blog/${featured.slug}`}>
-              <div className="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-[16px] p-8 hover:border-white/[0.15] transition-all group">
+              <div className="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-[16px] p-8 hover:border-glass-border-hover transition-all group">
                 <div className="flex items-center gap-2 text-xs text-muted mb-3">
                   <span className="text-accent-blue">
                     {featured.frontmatter.category}

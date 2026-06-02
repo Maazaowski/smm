@@ -228,7 +228,7 @@ export default function AboutPage() {
                   {items.map((tech) => (
                     <span
                       key={tech}
-                      className="rounded-full border border-glass-border bg-glass-bg px-3 py-1.5 text-sm text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+                      className="rounded-full border border-glass-border bg-glass-bg px-3 py-1.5 text-sm text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
                     >
                       {tech}
                     </span>
@@ -263,13 +263,13 @@ export default function AboutPage() {
               href={`https://github.com/${SITE.author.github}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
             >
               GitHub
             </a>
             <a
               href={`mailto:${SITE.author.email}`}
-              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-white/[0.15] transition-all"
+              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
             >
               Email
             </a>

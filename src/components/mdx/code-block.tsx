@@ -17,9 +17,9 @@ export function CodeBlock(props: React.ComponentProps<"pre">) {
     (props as Record<string, unknown>)["data-language"] as string | undefined;
 
   return (
-    <div className="group relative my-6 rounded-xl border border-white/[0.08] bg-[oklch(0.13_0.01_260)] overflow-hidden">
+    <div className="group relative my-6 rounded-xl border border-code-border bg-code-bg overflow-hidden">
       {lang && (
-        <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06] text-xs text-muted">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-glass-border text-xs text-muted">
           <span className="uppercase tracking-wider">{lang}</span>
           <button
             onClick={handleCopy}
