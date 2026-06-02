@@ -2,20 +2,21 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Fonts use inline — they never change with theme */
 @theme inline {
-  /* Fonts */
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
   --font-display: var(--font-instrument-serif);
+}
 
-  /* Dark theme colors (OKLCH) */
+/* Colors do NOT use inline — values must be var() refs at runtime so .light overrides work */
+@theme {
   --color-bg: oklch(0.13 0.01 260);
   --color-surface-1: oklch(0.16 0.01 260);
   --color-surface-2: oklch(0.20 0.015 260);
   --color-glass-bg: oklch(0.15 0.01 260 / 0.6);
   --color-glass-border: oklch(1 0 0 / 0.08);
-  --color-glass-border-hover: oklch(1 0 0 / 0.15);
-  --color-glass-glow: oklch(0.65 0.15 250 / 0.15);
+  --color-glass-border-hover: oklch(1 0 0 / 0.18);
   --color-code-bg: oklch(0.13 0.01 260);
   --color-code-border: oklch(1 0 0 / 0.08);
   --color-overlay: oklch(0 0 0 / 0.5);
@@ -48,23 +49,24 @@
     background-color: oklch(0.70 0.15 250 / 0.3);
   }
 
-  /* Light theme overrides */
+  /* Light theme — overrides ALL color tokens */
   .light {
     --color-bg: oklch(0.97 0.005 260);
-    --color-surface-1: oklch(0.94 0.005 260);
-    --color-surface-2: oklch(0.91 0.005 260);
-    --color-glass-bg: oklch(1 0 0 / 0.7);
+    --color-surface-1: oklch(0.93 0.005 260);
+    --color-surface-2: oklch(0.89 0.008 260);
+    --color-glass-bg: oklch(1 0 0 / 0.75);
     --color-glass-border: oklch(0 0 0 / 0.1);
-    --color-glass-border-hover: oklch(0 0 0 / 0.2);
-    --color-glass-glow: oklch(0.65 0.15 250 / 0.1);
-    --color-primary: oklch(0.15 0.01 260);
-    --color-secondary: oklch(0.40 0.01 260);
-    --color-muted: oklch(0.55 0.01 260);
-    --color-code-bg: oklch(0.96 0.005 260);
+    --color-glass-border-hover: oklch(0 0 0 / 0.22);
+    --color-code-bg: oklch(0.94 0.005 260);
     --color-code-border: oklch(0 0 0 / 0.1);
-    --color-overlay: oklch(0 0 0 / 0.3);
-    --color-accent-blue: oklch(0.55 0.18 250);
-    --color-accent-purple: oklch(0.50 0.22 300);
+    --color-overlay: oklch(0 0 0 / 0.25);
+    --color-primary: oklch(0.15 0.01 260);
+    --color-secondary: oklch(0.38 0.01 260);
+    --color-muted: oklch(0.52 0.01 260);
+    --color-accent-blue: oklch(0.50 0.18 250);
+    --color-accent-purple: oklch(0.46 0.22 300);
+    --color-success: oklch(0.45 0.18 150);
+    --color-error: oklch(0.50 0.20 25);
   }
 }
 
@@ -77,37 +79,17 @@
 .animate-shimmer {
   background: linear-gradient(
     90deg,
-    oklch(0.16 0.01 260) 25%,
-    oklch(0.22 0.015 260) 50%,
-    oklch(0.16 0.01 260) 75%
+    var(--color-surface-1) 25%,
+    var(--color-surface-2) 50%,
+    var(--color-surface-1) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.light .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.91 0.005 260) 25%,
-    oklch(0.95 0.005 260) 50%,
-    oklch(0.91 0.005 260) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-}
-
-.light .prose code:not(pre code) {
-  background: oklch(0.91 0.005 260);
-}
-
-.light .prose hr {
-  border-color: oklch(0 0 0 / 0.08);
 }
 
 /* Prose styles for blog content */
 .prose {
-  --prose-max-width: 65ch;
-  max-width: var(--prose-max-width);
+  max-width: 65ch;
   line-height: 1.75;
 }
 
@@ -122,6 +104,7 @@
   line-height: 1.2;
   margin-top: 2em;
   margin-bottom: 0.5em;
+  color: var(--color-primary);
 }
 
 .prose h2 {
@@ -170,7 +153,7 @@
 }
 
 .prose code:not(pre code) {
-  background: oklch(0.20 0.015 260);
+  background: var(--color-surface-2);
   padding: 0.15em 0.4em;
   border-radius: 0.375rem;
   font-size: 0.875em;
@@ -179,7 +162,7 @@
 }
 
 .prose hr {
-  border-color: oklch(1 0 0 / 0.08);
+  border-color: var(--color-glass-border);
   margin: 2em 0;
 }
 
@@ -190,7 +173,7 @@
 
 .prose .anchor-link:hover {
   text-decoration: underline;
-  text-decoration-color: oklch(0.70 0.15 250 / 0.3);
+  text-decoration-color: var(--color-accent-blue);
   text-underline-offset: 4px;
 }
 
