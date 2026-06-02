@@ -134,9 +134,12 @@ export async function POST(request: NextRequest) {
       content: Buffer.from(fileContent).toString("base64"),
     });
     return NextResponse.json({ success: true, slug });
-  } catch (err) {
+  } catch (err: unknown) {
+    const status = (err as { status?: number })?.status;
+    const message = (err as { message?: string })?.message ?? String(err);
+    console.error("[admin/posts POST] GitHub API error:", { status, message, owner, repo, filePath });
     return NextResponse.json(
-      { error: "GitHub API error", details: String(err) },
+      { error: `GitHub API error (${status ?? "?"}): ${message}` },
       { status: 500 }
     );
   }
