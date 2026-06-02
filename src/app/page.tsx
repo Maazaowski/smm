@@ -14,17 +14,12 @@ export default function Home() {
       {/* Hero */}
       <section className="py-24 sm:py-32">
         <ScrollReveal>
-          <p className="text-sm font-medium text-accent-blue mb-4 tracking-wider uppercase">
-            Welcome to
-          </p>
-        </ScrollReveal>
-        <ScrollReveal delay={0.1}>
           <h1 className="font-display text-5xl sm:text-7xl text-primary mb-6">
             {SITE.name}
           </h1>
         </ScrollReveal>
-        <ScrollReveal delay={0.2}>
-          <p className="text-lg sm:text-xl text-secondary max-w-2xl leading-relaxed">
+        <ScrollReveal delay={0.1}>
+          <p className="text-xl sm:text-2xl text-secondary max-w-2xl leading-snug font-medium">
             {SITE.description}
           </p>
         </ScrollReveal>

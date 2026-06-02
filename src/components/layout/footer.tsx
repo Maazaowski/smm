@@ -25,12 +25,10 @@ export function Footer() {
             GitHub
           </a>
           <a
-            href={`https://twitter.com/${SITE.author.twitter?.replace("@", "")}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`mailto:${SITE.author.email}`}
             className="text-sm text-secondary hover:text-primary transition-colors"
           >
-            Twitter
+            Email
           </a>
         </div>
       </div>

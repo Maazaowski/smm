@@ -2,13 +2,14 @@ export const SITE = {
   name: "maazaowski",
   title: "maazaowski",
   description:
-    "Stories, insights, and tech news from a senior software & AI engineer.",
+    "I build software, deploy AI agents, and write about it.",
   url: "https://maazaowski.com",
   author: {
-    name: "maazaowski",
-    twitter: "@maazaowski",
-    github: "maazaowski",
-    linkedin: "maazaowski",
+    name: "Syed Muhammad Maaz",
+    handle: "maazaowski",
+    email: "m.maaz96@gmail.com",
+    github: "Maazaowski",
+    linkedin: "syed-muhammad-maaz-193292148",
   },
 } as const;
 

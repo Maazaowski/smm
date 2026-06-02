@@ -28,7 +28,7 @@ export function ViewCounter({ slug }: ViewCounterProps) {
   }, [slug]);
 
   if (views === null) {
-    return <span className="text-muted text-sm">—</span>;
+    return <span className="text-muted text-sm">...</span>;
   }
 
   return (

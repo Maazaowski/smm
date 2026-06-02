@@ -22,7 +22,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
 
   const shareTwitter = () => {
     window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=${SITE.author.twitter?.replace("@", "")}`,
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
       "_blank",
       "width=600,height=500"
     );
