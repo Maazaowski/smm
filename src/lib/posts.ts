@@ -1,4 +1,3 @@
-import { cache } from "react";
 import { eq, desc, and } from "drizzle-orm";
 import { db } from "./db";
 import { posts } from "./db/schema";
@@ -26,26 +25,30 @@ function dbToPost(p: DbPost): Post {
   };
 }
 
-// cache() deduplicates calls within the same request (avoids N+1 on layout + page)
-export const getAllPosts = cache(async (includeDrafts = false): Promise<Post[]> => {
+export async function getAllPosts(includeDrafts = false): Promise<Post[]> {
   if (!db) return [];
   const rows = includeDrafts
     ? await db.select().from(posts).orderBy(desc(posts.publishedAt))
-    : await db.select().from(posts).where(eq(posts.draft, false)).orderBy(desc(posts.publishedAt));
+    : await db.select().from(posts)
+        .where(eq(posts.draft, false))
+        .orderBy(desc(posts.publishedAt));
   return rows.map(dbToPost);
-});
+}
 
-export const getPostBySlug = cache(
-  async (slug: string, includeDrafts = false): Promise<Post | null> => {
-    if (!db) return null;
-    const rows = includeDrafts
-      ? await db.select().from(posts).where(eq(posts.slug, slug)).limit(1)
-      : await db.select().from(posts)
-          .where(and(eq(posts.slug, slug), eq(posts.draft, false)))
-          .limit(1);
-    return rows[0] ? dbToPost(rows[0]) : null;
-  }
-);
+export async function getPostBySlug(
+  slug: string,
+  includeDrafts = false
+): Promise<Post | null> {
+  if (!db) return null;
+  const rows = includeDrafts
+    ? await db.select().from(posts).where(eq(posts.slug, slug)).limit(1)
+    : await db
+        .select()
+        .from(posts)
+        .where(and(eq(posts.slug, slug), eq(posts.draft, false)))
+        .limit(1);
+  return rows[0] ? dbToPost(rows[0]) : null;
+}
 
 export async function getPostsByTag(tag: string): Promise<Post[]> {
   const all = await getAllPosts();
@@ -74,7 +77,10 @@ export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
     .sort((a, b) => b.count - a.count);
 }
 
-export async function getRelatedPosts(currentSlug: string, limit = 3): Promise<Post[]> {
+export async function getRelatedPosts(
+  currentSlug: string,
+  limit = 3
+): Promise<Post[]> {
   const current = await getPostBySlug(currentSlug);
   if (!current) return [];
 
@@ -95,7 +101,7 @@ export async function getRelatedPosts(currentSlug: string, limit = 3): Promise<P
     .map((x) => x.p);
 }
 
-// --- Write operations (used by admin panel) ---
+// --- Write operations ---
 
 export async function createPost(data: {
   slug: string;

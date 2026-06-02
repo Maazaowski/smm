@@ -27,7 +27,10 @@ async function getFeaturedPost() {
 }
 
 export default async function Home() {
-  const [allPosts, featured] = await Promise.all([getAllPosts(), getFeaturedPost()]);
+  const [allPosts, featured] = await Promise.all([
+    getAllPosts().catch(() => []),
+    getFeaturedPost().catch(() => null),
+  ]);
   const latest = allPosts.slice(0, 6);
 
   return (

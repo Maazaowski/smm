@@ -12,7 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const [posts, tags] = await Promise.all([getAllPosts(), getAllTags()]);
+  const [posts, tags] = await Promise.all([
+    getAllPosts().catch(() => []),
+    getAllTags().catch(() => []),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">

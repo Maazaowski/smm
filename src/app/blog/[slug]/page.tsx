@@ -68,8 +68,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const [post, related] = await Promise.all([
-    getPostBySlug(slug),
-    getRelatedPosts(slug),
+    getPostBySlug(slug).catch(() => null),
+    getRelatedPosts(slug).catch(() => []),
   ]);
 
   if (!post) notFound();
