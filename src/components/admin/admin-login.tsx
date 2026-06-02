@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 
 export function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +21,7 @@ export function AdminLogin() {
       });
 
       if (res.ok) {
-        router.refresh();
+        window.location.reload();
       } else {
         setError("Invalid password");
       }
