@@ -40,12 +40,12 @@ export function GiscusComments({ slug }: GiscusCommentsProps) {
         {visible ? (
           <Giscus
             id="comments"
-            repo="maazaowski/smm"
-            repoId=""
-            category="Blog Comments"
-            categoryId=""
-            mapping="specific"
-            term={slug}
+            repo="Maazaowski/smm"
+            repoId="R_kgDOSt2C6A"
+            category="General"
+            categoryId="DIC_kwDOSt2C6M4C-VP5"
+            mapping="pathname"
+            strict="0"
             reactionsEnabled="1"
             emitMetadata="0"
             inputPosition="top"
