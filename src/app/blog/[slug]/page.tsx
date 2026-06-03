@@ -82,9 +82,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       <div className="relative flex gap-16">
         {/* Main content */}
         <article className="min-w-0 max-w-3xl">
-          <ScrollReveal>
-            <PostHeader post={post} />
-          </ScrollReveal>
+          <PostHeader post={post} />
 
           <div className="mb-8">
             <Suspense fallback={<span className="text-muted text-sm">...</span>}>
@@ -92,9 +90,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </Suspense>
           </div>
 
-          <ScrollReveal delay={0.15}>
-            <div className="prose">{content}</div>
-          </ScrollReveal>
+          <div className="prose">{content}</div>
 
           <div className="mt-12">
             <Reactions slug={slug} />

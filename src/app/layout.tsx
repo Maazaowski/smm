@@ -45,6 +45,12 @@ export const metadata: Metadata = {
     title: SITE.title,
     description: SITE.description,
   },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+  },
   twitter: {
     card: "summary_large_image",
   },
