@@ -29,6 +29,7 @@ interface Analytics {
   totalReactions: number;
   totalPosts: number;
   avgViewsPerPost: number;
+  subscribers: number;
   postStats: PostStat[];
   dailyViews: { date: string; views: number }[];
 }
@@ -48,8 +49,8 @@ export function DashboardContent() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="h-24 rounded-2xl animate-shimmer" />
           ))}
         </div>
@@ -68,6 +69,7 @@ export function DashboardContent() {
 
   const summaryCards = [
     { label: "Total Views", value: data.totalViews },
+    { label: "Subscribers", value: data.subscribers ?? 0 },
     { label: "Total Reactions", value: data.totalReactions },
     { label: "Total Posts", value: data.totalPosts },
     { label: "Avg Views/Post", value: data.avgViewsPerPost },
@@ -86,7 +88,7 @@ export function DashboardContent() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-8">
         {summaryCards.map((card) => (
           <GlassCard key={card.label} className="p-6" hover={false}>
             <p className="text-xs text-muted uppercase tracking-wider mb-1">

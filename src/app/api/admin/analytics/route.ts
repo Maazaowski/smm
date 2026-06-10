@@ -19,6 +19,7 @@ export async function GET() {
       totalReactions: 0,
       totalPosts: posts.length,
       avgViewsPerPost: 0,
+      subscribers: 0,
       postStats: posts.map((p) => ({
         slug: p.slug,
         title: p.frontmatter.title,
@@ -30,6 +31,7 @@ export async function GET() {
   }
 
   const r = redis;
+  const subscribers = await r.scard("subscribers");
   const postStats = await Promise.all(
     posts.map(async (post) => {
       const views = (await r.get<number>(`views:${post.slug}`)) ?? 0;
@@ -68,6 +70,7 @@ export async function GET() {
     totalReactions,
     totalPosts: posts.length,
     avgViewsPerPost: posts.length > 0 ? Math.round(totalViews / posts.length) : 0,
+    subscribers,
     postStats: postStats.sort((a, b) => b.views - a.views),
     dailyViews,
   });
