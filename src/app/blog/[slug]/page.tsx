@@ -10,6 +10,7 @@ import { Reactions } from "@/components/blog/reactions";
 import { ViewCounter } from "@/components/blog/view-counter";
 import { GiscusComments } from "@/components/blog/giscus-comments";
 import { TableOfContents } from "@/components/blog/table-of-contents";
+import { NewsletterForm } from "@/components/blog/newsletter-form";
 import { PostCard } from "@/components/blog/post-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { SITE } from "@/lib/constants";
@@ -99,6 +100,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           <footer className="mt-8 pt-8 border-t border-glass-border">
             <ShareButtons title={post.frontmatter.title} slug={slug} />
           </footer>
+
+          <div className="mt-12">
+            <NewsletterForm />
+          </div>
 
           <GiscusComments slug={slug} />
 
