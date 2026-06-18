@@ -14,11 +14,41 @@ export function Mermaid({ chart }: { chart: string }) {
       try {
         // Lazy-load the heavy mermaid bundle only on posts that use it.
         const mermaid = (await import("mermaid")).default;
+        const isLight = resolvedTheme === "light";
         mermaid.initialize({
           startOnLoad: false,
           securityLevel: "strict",
-          theme: resolvedTheme === "light" ? "neutral" : "dark",
+          theme: "base",
           fontFamily: "var(--font-inter), sans-serif",
+          // Tuned to the site palette: teal borders, blue/purple edges, on a
+          // glassy navy (dark) or slate (light) surface.
+          themeVariables: isLight
+            ? {
+                background: "transparent",
+                primaryColor: "#f1f5f9",
+                primaryBorderColor: "#0d9488",
+                primaryTextColor: "#0f172a",
+                lineColor: "#7c3aed",
+                secondaryColor: "#ede9fe",
+                tertiaryColor: "#f8fafc",
+                clusterBkg: "#f8fafc",
+                clusterBorder: "#cbd5e1",
+                edgeLabelBackground: "#f1f5f9",
+                fontSize: "15px",
+              }
+            : {
+                background: "transparent",
+                primaryColor: "#161e2e",
+                primaryBorderColor: "#2dd4bf",
+                primaryTextColor: "#e2e8f0",
+                lineColor: "#a78bfa",
+                secondaryColor: "#1e2740",
+                tertiaryColor: "#161e2e",
+                clusterBkg: "#131a28",
+                clusterBorder: "#334155",
+                edgeLabelBackground: "#0f1623",
+                fontSize: "15px",
+              },
         });
 
         // Unique id per render so concurrent (StrictMode) renders never collide.
