@@ -3,6 +3,7 @@ import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkGfm from "remark-gfm";
+import { rehypeMermaid } from "./rehype-mermaid";
 import { mdxComponents } from "@/components/mdx";
 
 export async function renderMDX(source: string) {
@@ -24,6 +25,8 @@ export async function renderMDX(source: string) {
               },
             },
           ],
+          // Must run before rehype-pretty-code so mermaid blocks bypass Shiki.
+          rehypeMermaid,
           [
             rehypePrettyCode,
             {

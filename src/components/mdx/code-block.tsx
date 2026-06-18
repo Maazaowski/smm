@@ -1,10 +1,25 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, Children } from "react";
+import { Mermaid } from "./mermaid";
+
+function childrenToText(children: React.ReactNode): string {
+  return Children.toArray(children)
+    .map((c) => (typeof c === "string" ? c : ""))
+    .join("");
+}
 
 export function CodeBlock(props: React.ComponentProps<"pre">) {
   const preRef = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState(false);
+
+  // Mermaid blocks are emitted by rehypeMermaid as <pre class="mermaid"> with
+  // the raw diagram source as their text child. Render a diagram, not a box.
+  const className =
+    typeof props.className === "string" ? props.className : "";
+  if (className.split(/\s+/).includes("mermaid")) {
+    return <Mermaid chart={childrenToText(props.children)} />;
+  }
 
   const handleCopy = async () => {
     const text = preRef.current?.textContent ?? "";
