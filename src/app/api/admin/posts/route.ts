@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
+import { redis } from "@/lib/redis";
 import { getAllPosts, createPost } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
@@ -9,15 +10,32 @@ export async function GET() {
   if (!isAuth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const all = await getAllPosts(true); // include drafts for admin
+
+  // Look up which posts have already been emailed and the current list size.
+  const notifiedSlugs = new Set<string>();
+  let subscriberCount = 0;
+  if (redis) {
+    const r = redis;
+    const [flags, count] = await Promise.all([
+      Promise.all(all.map((p) => r.exists(`notified:${p.slug}`))),
+      r.scard("subscribers"),
+    ]);
+    all.forEach((p, i) => {
+      if (flags[i]) notifiedSlugs.add(p.slug);
+    });
+    subscriberCount = count;
+  }
+
   const mapped = all.map((p) => ({
     slug: p.slug,
     title: p.frontmatter.title,
     date: p.frontmatter.date,
     draft: p.frontmatter.draft ?? false,
     category: p.frontmatter.category,
+    notified: notifiedSlugs.has(p.slug),
   }));
 
-  return NextResponse.json({ posts: mapped });
+  return NextResponse.json({ posts: mapped, subscriberCount });
 }
 
 export async function POST(request: NextRequest) {

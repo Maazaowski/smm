@@ -12,10 +12,13 @@ interface PostEntry {
   date: string;
   draft: boolean;
   category: string;
+  notified: boolean;
 }
 
 export function AdminPanel() {
   const [posts, setPosts] = useState<PostEntry[]>([]);
+  const [subscriberCount, setSubscriberCount] = useState(0);
+  const [sendingSlug, setSendingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
@@ -40,6 +43,7 @@ export function AdminPanel() {
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts);
+        setSubscriberCount(data.subscriberCount ?? 0);
       }
     } catch {
       // ignore
@@ -134,6 +138,45 @@ export function AdminPanel() {
       fetchPosts();
     } catch {
       // ignore
+    }
+  };
+
+  const handleNotify = async (slug: string, title: string) => {
+    if (subscriberCount === 0) {
+      alert("You have no subscribers yet.");
+      return;
+    }
+    if (
+      !confirm(
+        `Email "${title}" to ${subscriberCount} subscriber${subscriberCount === 1 ? "" : "s"}? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setSendingSlug(slug);
+    try {
+      const res = await fetch(`/api/admin/posts/${slug}/notify`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        alert(`Sent to ${data.sent ?? 0} subscriber${data.sent === 1 ? "" : "s"}.`);
+        setPosts((prev) =>
+          prev.map((p) => (p.slug === slug ? { ...p, notified: true } : p))
+        );
+      } else if (data.alreadySent) {
+        alert("This post was already sent to subscribers.");
+        setPosts((prev) =>
+          prev.map((p) => (p.slug === slug ? { ...p, notified: true } : p))
+        );
+      } else {
+        alert(`Failed to send: ${data.error ?? res.statusText}`);
+      }
+    } catch (err) {
+      alert(`Error: ${String(err)}`);
+    } finally {
+      setSendingSlug(null);
     }
   };
 
@@ -291,6 +334,24 @@ export function AdminPanel() {
                   {post.draft && <Badge variant="accent">Draft</Badge>}
                 </div>
                 <div className="flex items-center gap-2">
+                  {!post.draft &&
+                    (post.notified ? (
+                      <span
+                        className="text-xs text-teal-400 px-2 py-1"
+                        title="This post was emailed to subscribers"
+                      >
+                        Sent ✓
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleNotify(post.slug, post.title)}
+                        disabled={sendingSlug === post.slug}
+                        className="text-xs text-accent-blue hover:text-accent-purple transition-colors px-2 py-1 disabled:opacity-50"
+                        title="Email this post to your subscribers"
+                      >
+                        {sendingSlug === post.slug ? "Sending..." : "Send to subscribers"}
+                      </button>
+                    ))}
                   <button
                     onClick={() => handleEdit(post.slug)}
                     className="text-xs text-secondary hover:text-primary transition-colors px-2 py-1"

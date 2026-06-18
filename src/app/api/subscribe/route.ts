@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
 import { SITE } from "@/lib/constants";
+import { sendEmail, emailLayout } from "@/lib/email";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -46,44 +47,20 @@ export async function POST(request: NextRequest) {
 }
 
 async function sendWelcomeEmail(email: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
-
-  const from =
-    process.env.NEWSLETTER_FROM ?? `${SITE.name} <hello@maazaowski.com>`;
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: email,
-      reply_to: SITE.author.email,
-      subject: `You're subscribed to ${SITE.name}`,
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; color: #0f172a; line-height: 1.6;">
-          <h2 style="margin: 0 0 12px;">Thanks for subscribing.</h2>
-          <p style="margin: 0 0 16px;">
-            You'll get an email when I publish something new. I write about
-            building software, deploying AI agents, and the things I learn
-            along the way.
-          </p>
-          <p style="margin: 0 0 16px;">
-            In the meantime, the latest posts are at
-            <a href="${SITE.url}/blog" style="color: #14b8a6;">${SITE.url.replace(/^https?:\/\//, "")}/blog</a>.
-          </p>
-          <p style="margin: 24px 0 0; color: #64748b; font-size: 14px;">
-            ${SITE.author.name}
-          </p>
-        </div>
-      `,
-    }),
+  await sendEmail({
+    to: email,
+    subject: `You're subscribed to ${SITE.name}`,
+    html: emailLayout(`
+      <h2 style="margin: 0 0 12px;">Thanks for subscribing.</h2>
+      <p style="margin: 0 0 16px;">
+        You'll get an email when I publish something new. I write about
+        building software, deploying AI agents, and the things I learn
+        along the way.
+      </p>
+      <p style="margin: 0 0 16px;">
+        In the meantime, the latest posts are at
+        <a href="${SITE.url}/blog" style="color: #14b8a6;">${SITE.url.replace(/^https?:\/\//, "")}/blog</a>.
+      </p>
+    `),
   });
-
-  if (!res.ok) {
-    throw new Error(`Resend ${res.status}: ${await res.text()}`);
-  }
 }
