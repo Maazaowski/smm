@@ -22,6 +22,12 @@ export function Footer() {
         </p>
         <div className="flex items-center gap-6">
           <a
+            href="/guestbook"
+            className="text-sm text-secondary hover:text-primary transition-colors"
+          >
+            Guestbook
+          </a>
+          <a
             href={`https://linkedin.com/in/${SITE.author.linkedin}`}
             target="_blank"
             rel="noopener noreferrer"
