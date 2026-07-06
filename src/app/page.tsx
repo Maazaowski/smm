@@ -3,7 +3,7 @@ import { getAllPosts } from "@/lib/posts";
 import { redis } from "@/lib/redis";
 import { PostCard } from "@/components/blog/post-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { SITE } from "@/lib/constants";
+import { Hero } from "@/components/home/hero";
 
 export const revalidate = 60;
 
@@ -35,35 +35,7 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-6xl px-6">
-      {/* Hero */}
-      <section className="py-24 sm:py-32">
-        <ScrollReveal>
-          <h1 className="font-display text-5xl sm:text-7xl text-primary mb-6">
-            {SITE.name}
-          </h1>
-        </ScrollReveal>
-        <ScrollReveal delay={0.1}>
-          <p className="text-xl sm:text-2xl text-secondary max-w-2xl leading-snug font-medium">
-            {SITE.description}
-          </p>
-        </ScrollReveal>
-        <ScrollReveal delay={0.2}>
-          <div className="flex gap-4 mt-8">
-            <Link
-              href="/blog"
-              className="rounded-xl bg-accent-blue px-6 py-3 text-sm font-medium text-white hover:bg-accent-purple transition-colors"
-            >
-              Read the Blog
-            </Link>
-            <Link
-              href="/about"
-              className="rounded-xl border border-glass-border bg-glass-bg px-6 py-3 text-sm font-medium text-secondary hover:text-primary hover:border-glass-border-hover transition-all"
-            >
-              About Me
-            </Link>
-          </div>
-        </ScrollReveal>
-      </section>
+      <Hero />
 
       {/* Featured Post */}
       {featured && (
