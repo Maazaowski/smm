@@ -1,8 +1,6 @@
 import { getAllPosts, getAllTags } from "@/lib/posts";
-import { PostCard } from "@/components/blog/post-card";
-import { Badge } from "@/components/ui/badge";
+import { BlogIndex } from "@/components/blog/blog-index";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const revalidate = 60;
 
@@ -17,6 +15,13 @@ export default async function BlogPage() {
     getAllTags().catch(() => []),
   ]);
 
+  // Strip article bodies before sending to the client filter component.
+  const previews = posts.map(({ frontmatter, slug, readingTime }) => ({
+    frontmatter,
+    slug,
+    readingTime,
+  }));
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
       <header className="mb-12">
@@ -28,24 +33,8 @@ export default async function BlogPage() {
         </p>
       </header>
 
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-12">
-          {tags.map(({ tag, count }) => (
-            <Link key={tag} href={`/tags/${tag}`}>
-              <Badge>
-                {tag} ({count})
-              </Badge>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {posts.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard key={post.slug} post={post} />
-          ))}
-        </div>
+      {previews.length > 0 ? (
+        <BlogIndex posts={previews} tags={tags} />
       ) : (
         <p className="text-center text-secondary py-16">
           No posts yet. Check back soon.
