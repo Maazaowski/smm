@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { NAV_LINKS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -23,20 +24,30 @@ export function Header() {
         <div className="flex items-center gap-1">
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-                  pathname === link.href
-                    ? "text-primary bg-surface-1"
-                    : "text-secondary hover:text-primary hover:bg-surface-1/50"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "relative rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "text-primary"
+                      : "text-secondary hover:text-primary"
+                  )}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 -z-10 rounded-lg bg-surface-1"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Cmd+K hint */}

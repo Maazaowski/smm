@@ -10,24 +10,26 @@
 }
 
 /* Colors do NOT use inline — values must be var() refs at runtime so .light overrides work */
+/* Warm/organic dark palette: espresso charcoal neutrals (hue ~55), amber + terracotta accents */
 @theme {
-  --color-bg: oklch(0.13 0.01 260);
-  --color-surface-1: oklch(0.16 0.01 260);
-  --color-surface-2: oklch(0.20 0.015 260);
-  --color-glass-bg: oklch(0.15 0.01 260 / 0.6);
-  --color-glass-border: oklch(1 0 0 / 0.08);
-  --color-glass-border-hover: oklch(1 0 0 / 0.18);
-  --color-code-bg: oklch(0.13 0.01 260);
-  --color-code-border: oklch(1 0 0 / 0.08);
-  --color-overlay: oklch(0 0 0 / 0.5);
-  --color-primary: oklch(0.95 0.005 260);
-  --color-secondary: oklch(0.65 0.01 260);
-  --color-muted: oklch(0.45 0.01 260);
-  --color-accent-blue: oklch(0.70 0.15 250);
-  --color-accent-purple: oklch(0.65 0.20 300);
-  --color-success: oklch(0.70 0.18 150);
-  --color-warning: oklch(0.75 0.15 85);
-  --color-error: oklch(0.65 0.20 25);
+  --color-bg: oklch(0.15 0.012 55);
+  --color-surface-1: oklch(0.18 0.014 55);
+  --color-surface-2: oklch(0.23 0.017 55);
+  --color-glass-bg: oklch(0.17 0.014 55 / 0.6);
+  --color-glass-border: oklch(0.95 0.02 75 / 0.09);
+  --color-glass-border-hover: oklch(0.95 0.02 75 / 0.2);
+  --color-code-bg: oklch(0.14 0.012 55);
+  --color-code-border: oklch(0.95 0.02 75 / 0.09);
+  --color-overlay: oklch(0.1 0.01 55 / 0.55);
+  --color-primary: oklch(0.95 0.01 80);
+  --color-secondary: oklch(0.68 0.016 70);
+  --color-muted: oklch(0.5 0.016 65);
+  /* Token names kept (used across 14 files); values are now warm */
+  --color-accent-blue: oklch(0.78 0.14 70); /* amber */
+  --color-accent-purple: oklch(0.68 0.15 35); /* terracotta */
+  --color-success: oklch(0.72 0.16 145);
+  --color-warning: oklch(0.8 0.14 85);
+  --color-error: oklch(0.65 0.2 25);
 }
 
 @layer base {
@@ -46,27 +48,39 @@
   }
 
   ::selection {
-    background-color: oklch(0.70 0.15 250 / 0.3);
+    background-color: oklch(0.78 0.14 70 / 0.3);
   }
 
-  /* Light theme — overrides ALL color tokens */
+  /* Light theme — warm cream/paper + warm ink; overrides ALL color tokens */
   .light {
-    --color-bg: oklch(0.97 0.005 260);
-    --color-surface-1: oklch(0.93 0.005 260);
-    --color-surface-2: oklch(0.89 0.008 260);
-    --color-glass-bg: oklch(1 0 0 / 0.75);
-    --color-glass-border: oklch(0 0 0 / 0.1);
-    --color-glass-border-hover: oklch(0 0 0 / 0.22);
-    --color-code-bg: oklch(0.94 0.005 260);
-    --color-code-border: oklch(0 0 0 / 0.1);
-    --color-overlay: oklch(0 0 0 / 0.25);
-    --color-primary: oklch(0.15 0.01 260);
-    --color-secondary: oklch(0.38 0.01 260);
-    --color-muted: oklch(0.52 0.01 260);
-    --color-accent-blue: oklch(0.50 0.18 250);
-    --color-accent-purple: oklch(0.46 0.22 300);
-    --color-success: oklch(0.45 0.18 150);
-    --color-error: oklch(0.50 0.20 25);
+    --color-bg: oklch(0.975 0.012 85);
+    --color-surface-1: oklch(0.945 0.014 85);
+    --color-surface-2: oklch(0.91 0.016 82);
+    --color-glass-bg: oklch(0.99 0.01 85 / 0.75);
+    --color-glass-border: oklch(0.3 0.03 60 / 0.12);
+    --color-glass-border-hover: oklch(0.3 0.03 60 / 0.25);
+    --color-code-bg: oklch(0.95 0.014 82);
+    --color-code-border: oklch(0.3 0.03 60 / 0.12);
+    --color-overlay: oklch(0.2 0.02 50 / 0.25);
+    --color-primary: oklch(0.2 0.02 50);
+    --color-secondary: oklch(0.4 0.02 55);
+    --color-muted: oklch(0.52 0.02 60);
+    --color-accent-blue: oklch(0.55 0.15 55); /* amber */
+    --color-accent-purple: oklch(0.52 0.17 32); /* terracotta */
+    --color-success: oklch(0.48 0.16 145);
+    --color-error: oklch(0.5 0.2 25);
+  }
+
+  /* Respect reduced-motion globally: neutralize large/looping animations */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -74,6 +88,33 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* Slow drift for the ambient warm aurora blobs */
+@keyframes aurora-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, 4%) scale(1.08); }
+  66% { transform: translate(-4%, 6%) scale(0.96); }
+}
+
+@keyframes aurora-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-5%, -3%) scale(1.05); }
+  66% { transform: translate(5%, -5%) scale(0.94); }
+}
+
+.animate-aurora-a { animation: aurora-drift-a 26s ease-in-out infinite; }
+.animate-aurora-b { animation: aurora-drift-b 32s ease-in-out infinite; }
+
+/* Subtle organic grain overlay */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .animate-shimmer {
@@ -129,6 +170,17 @@
   color: var(--color-secondary);
 }
 
+/* Editorial drop cap on the opening paragraph */
+.prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.6em;
+  line-height: 0.72;
+  padding-right: 0.08em;
+  margin-top: 0.05em;
+  color: var(--color-accent-blue);
+}
+
 .prose strong {
   color: var(--color-primary);
   font-weight: 600;
@@ -162,8 +214,16 @@
 }
 
 .prose hr {
-  border-color: var(--color-glass-border);
-  margin: 2em 0;
+  border: none;
+  height: 1px;
+  margin: 3em 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-blue),
+    transparent
+  );
+  opacity: 0.5;
 }
 
 .prose .anchor-link {

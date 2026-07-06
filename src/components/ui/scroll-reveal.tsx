@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -12,9 +12,9 @@ interface ScrollRevealProps {
 }
 
 const directionOffset = {
-  up: { x: 0, y: 30 },
-  left: { x: -30, y: 0 },
-  right: { x: 30, y: 0 },
+  up: { x: 0, y: 36 },
+  left: { x: -36, y: 0 },
+  right: { x: 36, y: 0 },
 };
 
 export function ScrollReveal({
@@ -26,23 +26,26 @@ export function ScrollReveal({
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, amount: 0.05 });
+  const reduce = useReducedMotion();
 
   const offset = directionOffset[direction];
+  const hidden = reduce
+    ? { opacity: 0 }
+    : { opacity: 0, x: offset.x, y: offset.y, filter: "blur(8px)" };
+  const shown = reduce
+    ? { opacity: 1 }
+    : { opacity: 1, x: 0, y: 0, filter: "blur(0px)" };
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: offset.x, y: offset.y }}
-      animate={
-        isInView
-          ? { opacity: 1, x: 0, y: 0 }
-          : { opacity: 0, x: offset.x, y: offset.y }
+      initial={hidden}
+      animate={isInView ? shown : hidden}
+      transition={
+        reduce
+          ? { duration: 0.2, delay }
+          : { type: "spring", stiffness: 120, damping: 20, mass: 0.8, delay }
       }
-      transition={{
-        duration: 0.6,
-        delay,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
       className={className}
     >
       {children}

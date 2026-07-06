@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CursorGlow } from "@/components/ui/cursor-glow";
+import { CustomCursor } from "@/components/ui/custom-cursor";
+import { Grain } from "@/components/ui/grain";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { getAllPosts } from "@/lib/posts";
@@ -84,13 +86,16 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {/* Background gradient blobs */}
-          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none hidden dark:block">
-            <div className="absolute top-[-20%] left-[-10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,oklch(0.45_0.15_280/0.15),transparent_70%)]" />
-            <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,oklch(0.45_0.12_230/0.1),transparent_70%)]" />
+          {/* Ambient warm aurora — amber / terracotta / rose, drifting slowly */}
+          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+            <div className="animate-aurora-a absolute top-[-25%] left-[-15%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,oklch(0.78_0.14_70/0.18),transparent_70%)] dark:bg-[radial-gradient(circle,oklch(0.7_0.15_60/0.16),transparent_70%)]" />
+            <div className="animate-aurora-b absolute bottom-[-20%] right-[-15%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,oklch(0.7_0.16_35/0.14),transparent_70%)] dark:bg-[radial-gradient(circle,oklch(0.62_0.16_30/0.14),transparent_70%)]" />
+            <div className="animate-aurora-a absolute top-[30%] right-[10%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,oklch(0.72_0.13_20/0.1),transparent_70%)]" />
           </div>
 
+          <Grain />
           <CursorGlow />
+          <CustomCursor />
           <ReadingProgress />
           <CommandPalette posts={posts} />
           <Header />
