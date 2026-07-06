@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CursorGlow } from "@/components/ui/cursor-glow";
+import { CustomCursor } from "@/components/ui/custom-cursor";
 import { Grain } from "@/components/ui/grain";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { CommandPalette } from "@/components/ui/command-palette";
@@ -94,6 +95,7 @@ export default async function RootLayout({
 
           <Grain />
           <CursorGlow />
+          <CustomCursor />
           <ReadingProgress />
           <CommandPalette posts={posts} />
           <Header />
