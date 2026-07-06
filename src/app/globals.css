@@ -170,6 +170,17 @@
   color: var(--color-secondary);
 }
 
+/* Editorial drop cap on the opening paragraph */
+.prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.6em;
+  line-height: 0.72;
+  padding-right: 0.08em;
+  margin-top: 0.05em;
+  color: var(--color-accent-blue);
+}
+
 .prose strong {
   color: var(--color-primary);
   font-weight: 600;
@@ -203,8 +214,16 @@
 }
 
 .prose hr {
-  border-color: var(--color-glass-border);
-  margin: 2em 0;
+  border: none;
+  height: 1px;
+  margin: 3em 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-blue),
+    transparent
+  );
+  opacity: 0.5;
 }
 
 .prose .anchor-link {

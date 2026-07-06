@@ -46,7 +46,7 @@ export function ReadingProgress() {
         style={{
           width: `${progress}%`,
           background:
-            "linear-gradient(90deg, oklch(0.70 0.15 250), oklch(0.65 0.20 300))",
+            "linear-gradient(90deg, oklch(0.80 0.14 72), oklch(0.70 0.16 32))",
         }}
       />
     </div>

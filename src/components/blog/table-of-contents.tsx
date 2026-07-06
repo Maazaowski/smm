@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { TableOfContentsItem } from "@/lib/types";
 
@@ -42,28 +43,38 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
           On this page
         </p>
         <ul className="space-y-1 border-l border-glass-border">
-          {headings.map((heading) => (
-            <li key={heading.id}>
-              <a
-                href={`#${heading.id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById(heading.id)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className={cn(
-                  "block py-1 text-sm transition-colors border-l -ml-px",
-                  heading.level === 2 ? "pl-4" : "pl-8",
-                  activeId === heading.id
-                    ? "border-accent-blue text-primary"
-                    : "border-transparent text-muted hover:text-secondary"
+          {headings.map((heading) => {
+            const isActive = activeId === heading.id;
+            return (
+              <li key={heading.id} className="relative">
+                {isActive && (
+                  <motion.span
+                    layoutId="toc-active"
+                    className="absolute left-0 top-0 h-full w-[2px] -ml-px rounded bg-accent-blue"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  />
                 )}
-              >
-                {heading.title}
-              </a>
-            </li>
-          ))}
+                <a
+                  href={`#${heading.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById(heading.id)
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={cn(
+                    "block py-1 text-sm transition-all duration-300",
+                    heading.level === 2 ? "pl-4" : "pl-8",
+                    isActive
+                      ? "text-primary translate-x-0.5"
+                      : "text-muted hover:text-secondary"
+                  )}
+                >
+                  {heading.title}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </nav>

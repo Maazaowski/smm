@@ -10,6 +10,7 @@ import { Reactions } from "@/components/blog/reactions";
 import { ViewCounter } from "@/components/blog/view-counter";
 import { GiscusComments } from "@/components/blog/giscus-comments";
 import { TableOfContents } from "@/components/blog/table-of-contents";
+import { FloatingActions } from "@/components/blog/floating-actions";
 import { NewsletterForm } from "@/components/blog/newsletter-form";
 import { PostCard } from "@/components/blog/post-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -80,6 +81,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+      <FloatingActions title={post.frontmatter.title} slug={slug} />
       <div className="relative flex gap-16">
         {/* Main content */}
         <article className="min-w-0 max-w-3xl">
