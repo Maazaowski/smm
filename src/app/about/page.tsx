@@ -3,6 +3,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Badge } from "@/components/ui/badge";
 import { SITE } from "@/lib/constants";
+import { getAboutContent } from "@/lib/about";
 
 export const metadata: Metadata = {
   title: "About",
@@ -10,114 +11,29 @@ export const metadata: Metadata = {
     "Syed Muhammad Maaz. Freelance Software & AI Engineer. 6+ years shipping backend systems, microservices, and AI agents.",
 };
 
-const timeline = [
-  {
-    period: "2025 – Present",
-    role: "Freelance Software & AI Engineer",
-    company: "Independent",
-    location: "Pakistan",
-    highlights: [
-      "Building web applications and deploying AI agents for client workflows",
-      "Currently onboarded with two clients on projects ranging from full-stack web apps to AI-powered automation",
-      "End-to-end ownership: architecture, development, deployment, and iteration",
-    ],
-  },
-  {
-    period: "Jan 2025 – May 2025",
-    role: "Senior Software Engineer",
-    company: "Astera Software",
-    location: "Karachi, Pakistan",
-    highlights: [
-      "Automated installer pipelines with Anthropic API (Claude) for PR review, reducing QA blocker issues by 80%",
-      "Led backend transition from WinForms to WPF and microservices architecture using .NET Core 8",
-      "Implemented gRPC services with bidirectional streaming and RabbitMQ/MassTransit message queues",
-      "Migrated installer pipelines from InstallShield to WiX, saving $10,000/year",
-      "Led Cross-Platform team for macOS compatibility via Avalonia XPF",
-    ],
-  },
-  {
-    period: "Jan 2023 – Jan 2025",
-    role: "Software Engineer II",
-    company: "Astera Software",
-    highlights: [
-      "Built the LLM Workbench for orchestrating AI requests and visualizations",
-      "Improved software performance by 86% through backend refactoring and query optimization",
-      "Established CI/CD pipelines in Azure DevOps with unit and integration test coverage",
-      "Directed monthly SonarQube audits over 12 sprints, reducing critical vulnerabilities by 67%",
-    ],
-  },
-  {
-    period: "Jun 2021 – Jan 2023",
-    role: "Software Engineer I",
-    company: "Astera Software",
-    highlights: [
-      "Led Visualization department in the Data Prep team for real-time data insights",
-      "Pioneered the Analytics Workbench architecture for data analysis in C# .NET",
-      "Built Installation Manager using Builder/Factory/Singleton patterns, cutting install time by 92%",
-      "Reduced latency by 40% through targeted C# .NET module refactoring over 6 months",
-    ],
-  },
-  {
-    period: "Jul 2020 – Jun 2021",
-    role: "Associate Software Engineer",
-    company: "Astera Software",
-    highlights: [
-      "Integrated statistical and ML models into Centerprise, boosting predictive accuracy by 20%",
-      "Created diagnostic tools reducing manual troubleshooting time by 30%",
-      "Designed data pipelines for model training",
-    ],
-  },
-];
+export const revalidate = 60;
 
-const skills = {
-  Languages: ["C#", "Java", "Python", "JavaScript", "TypeScript", "PHP"],
-  Frameworks: [
-    ".NET Core 8",
-    "ASP.NET Core",
-    "Next.js",
-    "React",
-    "Laravel",
-    "Avalonia XPF",
-  ],
-  Architecture: ["Microservices", "gRPC", "RabbitMQ", "REST", "Docker"],
-  "Cloud & DevOps": ["Azure DevOps", "AWS", "GCP", "CI/CD", "Vercel"],
-  Databases: ["PostgreSQL", "MongoDB", "SQL Server", "Redis"],
-  "AI & Agents": ["Claude", "Cursor", "GPT", "LLM Orchestration", "AI Agents"],
-};
+export default async function AboutPage() {
+  const { content } = await getAboutContent();
 
-export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
-      {/* Bio */}
       <ScrollReveal>
         <header className="mb-16">
           <h1 className="font-display text-4xl sm:text-5xl text-primary mb-6">
             About Me
           </h1>
-          <p className="text-lg text-secondary leading-relaxed">
-            Hey, I&apos;m{" "}
-            <strong className="text-primary">Syed Muhammad Maaz</strong>, a
-            freelance software & AI engineer with 6+ years of shipping
-            production systems. I go by{" "}
-            <strong className="text-accent-blue">maazaowski</strong> online.
-          </p>
-          <p className="text-lg text-secondary leading-relaxed mt-4">
-            After 5 years at{" "}
-            <strong className="text-primary">Astera Software</strong> where I
-            grew from associate to senior, led teams, and built everything from
-            microservices to AI-powered workflows. Then I went independent. Now I
-            help clients build web applications and deploy AI agents that
-            actually solve problems.
-          </p>
-          <p className="text-lg text-secondary leading-relaxed mt-4">
-            This blog is where I write about what I&apos;m building, what
-            I&apos;m learning, and what I think about the tech industry. No
-            fluff, no filler. Just real stories from the work.
-          </p>
+          {content.bio.map((paragraph, i) => (
+            <p
+              key={i}
+              className={`text-lg text-secondary leading-relaxed${i > 0 ? " mt-4" : ""}`}
+            >
+              {paragraph}
+            </p>
+          ))}
         </header>
       </ScrollReveal>
 
-      {/* What I Do Now */}
       <ScrollReveal>
         <section className="mb-16">
           <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
@@ -127,20 +43,16 @@ export default function AboutPage() {
             <div className="flex items-center gap-2 mb-3">
               <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
               <span className="text-sm font-medium text-success">
-                Available for projects
+                {content.availability.label}
               </span>
             </div>
             <p className="text-secondary leading-relaxed">
-              I&apos;m freelancing, currently working with two clients on
-              projects ranging from web applications to deploying AI agents for
-              their business workflows. If you need software built or AI
-              integrated into your stack, let&apos;s talk.
+              {content.availability.message}
             </p>
           </GlassCard>
         </section>
       </ScrollReveal>
 
-      {/* Education */}
       <ScrollReveal>
         <section className="mb-16">
           <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
@@ -148,31 +60,69 @@ export default function AboutPage() {
           </h2>
           <GlassCard className="p-6" hover={false}>
             <h3 className="text-lg font-semibold text-primary">
-              Bachelor of Science
+              {content.education.degree}
             </h3>
             <p className="text-sm text-secondary mt-1">
-              Institute of Business Administration (IBA) &middot; Karachi,
-              Pakistan
+              {content.education.institution} &middot; {content.education.location}
             </p>
             <div className="flex items-center gap-3 mt-2 text-sm text-muted">
-              <span>2016 – 2020</span>
-              <span>&middot;</span>
-              <span className="text-accent-blue font-medium">
-                CGPA: 3.63 / 4.00
-              </span>
+              <span>{content.education.period}</span>
+              {content.education.gpa && (
+                <>
+                  <span>&middot;</span>
+                  <span className="text-accent-blue font-medium">
+                    {content.education.gpa}
+                  </span>
+                </>
+              )}
             </div>
           </GlassCard>
         </section>
       </ScrollReveal>
 
-      {/* Career Timeline */}
+      {content.certificates.length > 0 && (
+        <ScrollReveal>
+          <section className="mb-16">
+            <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
+              Certifications
+            </h2>
+            <div className="space-y-4">
+              {content.certificates.map((cert, i) => (
+                <GlassCard key={i} className="p-6" hover={false}>
+                  <h3 className="text-lg font-semibold text-primary">
+                    {cert.title}
+                  </h3>
+                  <p className="text-sm text-secondary mt-1">
+                    {cert.issuer}
+                    {cert.issuedAt && (
+                      <>
+                        {" "}
+                        &middot; {cert.issuedAt}
+                      </>
+                    )}
+                  </p>
+                  <a
+                    href={cert.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-3 text-sm font-medium text-accent-blue hover:text-accent-purple transition-colors"
+                  >
+                    View credential &rarr;
+                  </a>
+                </GlassCard>
+              ))}
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
+
       <ScrollReveal>
         <section className="mb-16">
           <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
             Experience
           </h2>
           <div className="relative border-l border-glass-border pl-8 space-y-8">
-            {timeline.map((item, i) => (
+            {content.timeline.map((item, i) => (
               <ScrollReveal key={i} delay={i * 0.1}>
                 <div className="relative">
                   <div className="absolute -left-[2.55rem] top-1 h-3 w-3 rounded-full border-2 border-accent-blue bg-bg" />
@@ -212,14 +162,13 @@ export default function AboutPage() {
         </section>
       </ScrollReveal>
 
-      {/* Skills */}
       <ScrollReveal>
         <section className="mb-16">
           <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">
             Skills
           </h2>
           <div className="space-y-6">
-            {Object.entries(skills).map(([category, items]) => (
+            {Object.entries(content.skills).map(([category, items]) => (
               <div key={category}>
                 <p className="text-xs font-medium text-secondary uppercase tracking-wider mb-2">
                   {category}
@@ -240,7 +189,6 @@ export default function AboutPage() {
         </section>
       </ScrollReveal>
 
-      {/* Connect */}
       <ScrollReveal>
         <section>
           <h2 className="text-sm font-medium text-muted uppercase tracking-wider mb-6">

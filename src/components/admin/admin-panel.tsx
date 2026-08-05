@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { AboutEditor } from "@/components/admin/about-editor";
+
+type AdminTab = "posts" | "about";
 
 interface PostEntry {
   slug: string;
@@ -32,6 +35,7 @@ export function AdminPanel() {
   const [isDraft, setIsDraft] = useState(false);
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<AdminTab>("posts");
 
   useEffect(() => {
     fetchPosts();
@@ -284,7 +288,31 @@ export function AdminPanel() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-3xl text-primary">Admin</h1>
+        <div className="flex items-center gap-6">
+          <h1 className="font-display text-3xl text-primary">Admin</h1>
+          <div className="flex rounded-xl border border-glass-border bg-glass-bg p-1">
+            <button
+              onClick={() => setActiveTab("posts")}
+              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
+                activeTab === "posts"
+                  ? "bg-accent-blue text-white"
+                  : "text-secondary hover:text-primary"
+              }`}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => setActiveTab("about")}
+              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
+                activeTab === "about"
+                  ? "bg-accent-blue text-white"
+                  : "text-secondary hover:text-primary"
+              }`}
+            >
+              About
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -292,12 +320,14 @@ export function AdminPanel() {
           >
             Dashboard
           </Link>
-          <button
-            onClick={handleNew}
-            className="rounded-xl bg-accent-blue px-4 py-2 text-sm font-medium text-white hover:bg-accent-purple transition-colors"
-          >
-            New Post
-          </button>
+          {activeTab === "posts" && (
+            <button
+              onClick={handleNew}
+              className="rounded-xl bg-accent-blue px-4 py-2 text-sm font-medium text-white hover:bg-accent-purple transition-colors"
+            >
+              New Post
+            </button>
+          )}
           <button
             onClick={handleLogout}
             className="rounded-xl border border-glass-border bg-glass-bg px-4 py-2 text-sm text-secondary hover:text-primary transition-all"
@@ -307,7 +337,9 @@ export function AdminPanel() {
         </div>
       </div>
 
-      {loading ? (
+      {activeTab === "about" ? (
+        <AboutEditor />
+      ) : loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-16 rounded-xl animate-shimmer" />
