@@ -1,4 +1,5 @@
-import { pgTable, serial, text, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import type { AboutContent } from "../about-types";
 
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
@@ -17,3 +18,12 @@ export const posts = pgTable("posts", {
 
 export type DbPost = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
+
+export const aboutPage = pgTable("about_page", {
+  id: serial("id").primaryKey(),
+  content: jsonb("content").$type<AboutContent>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export type DbAboutPage = typeof aboutPage.$inferSelect;
+export type NewAboutPage = typeof aboutPage.$inferInsert;
