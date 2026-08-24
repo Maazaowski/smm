@@ -10,9 +10,10 @@ import type { Post } from "@/lib/types";
 
 interface CommandPaletteProps {
   posts: { slug: string; title: string; description: string; tags: string[] }[];
+  projects: { slug: string; title: string; description: string }[];
 }
 
-export function CommandPalette({ posts }: CommandPaletteProps) {
+export function CommandPalette({ posts, projects }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -30,6 +31,19 @@ export function CommandPalette({ posts }: CommandPaletteProps) {
   const results = search
     ? fuse.search(search).map((r) => r.item)
     : posts.slice(0, 5);
+
+  const projectFuse = useMemo(
+    () =>
+      new Fuse(projects, {
+        keys: ["title", "description"],
+        threshold: 0.4,
+      }),
+    [projects]
+  );
+
+  const projectResults = search
+    ? projectFuse.search(search).map((r) => r.item)
+    : projects.slice(0, 3);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -107,6 +121,30 @@ export function CommandPalette({ posts }: CommandPaletteProps) {
                   ))}
                 </Command.Group>
 
+                {/* Projects */}
+                {projectResults.length > 0 && (
+                  <Command.Group
+                    heading="Projects"
+                    className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+                  >
+                    {projectResults.map((project) => (
+                      <Command.Item
+                        key={project.slug}
+                        value={`project-${project.title}`}
+                        onSelect={() => navigate(`/projects/${project.slug}`)}
+                        className="flex flex-col gap-0.5 rounded-lg px-3 py-2.5 text-sm cursor-pointer aria-selected:bg-surface-2"
+                      >
+                        <span className="text-primary font-medium">
+                          {project.title}
+                        </span>
+                        <span className="text-xs text-muted line-clamp-1">
+                          {project.description}
+                        </span>
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
+
                 {/* Navigation */}
                 <Command.Group
                   heading="Navigation"
@@ -115,6 +153,7 @@ export function CommandPalette({ posts }: CommandPaletteProps) {
                   {[
                     { label: "Home", path: "/" },
                     { label: "Blog", path: "/blog" },
+                    { label: "Projects", path: "/projects" },
                     { label: "About", path: "/about" },
                   ].map((item) => (
                     <Command.Item

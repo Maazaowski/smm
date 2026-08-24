@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import {
   motion,
   useMotionValue,
@@ -8,9 +9,17 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { categoryColor } from "@/lib/categories";
-import type { Project } from "@/lib/projects";
+import { KIND_LABELS, STATUS_LABELS } from "@/lib/project-types";
+import { ProjectStatInline } from "./project-stat-strip";
+import type { ProjectPreview } from "@/lib/projects";
 
-export function ProjectCard({ project, index }: { project: Project; index: number }) {
+export function ProjectCard({
+  project,
+  index,
+}: {
+  project: ProjectPreview;
+  index: number;
+}) {
   const accent = categoryColor(project.category);
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
@@ -30,6 +39,15 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
     rx.set(0);
     ry.set(0);
   };
+
+  // Client work shows who it was for; everything else shows what kind of thing it is.
+  const attribution =
+    project.kind === "client" && project.client
+      ? project.client
+      : KIND_LABELS[project.kind];
+
+  const { stats } = project;
+  const repoUrl = stats?.visibility === "public" ? stats.repoUrl : null;
 
   return (
     <motion.div
@@ -55,24 +73,35 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
           style={{ background: accent }}
         />
 
-        <div className="mb-4 flex items-center justify-between text-xs">
+        <div className="mb-4 flex items-center justify-between gap-3 text-xs">
           <span className="font-medium" style={{ color: accent }}>
             {project.category}
           </span>
           <span className="text-muted">
-            {project.client} &middot; {project.year}
+            {attribution}
+            {project.year && <> &middot; {project.year}</>}
           </span>
         </div>
 
         <h3 className="mb-2 text-xl font-semibold text-primary">
-          {project.title}
+          {/* Stretched link: `after:` is taken by the mouse gradient above, and a
+              wrapping <Link> would nest the anchors in the links row below. */}
+          <Link
+            href={`/projects/${project.slug}`}
+            className="transition-colors before:absolute before:inset-0 before:z-10 before:content-[''] group-hover:text-accent-blue"
+          >
+            {project.title}
+          </Link>
         </h3>
+
         <p className="mb-5 text-sm leading-relaxed text-secondary">
           {project.description}
         </p>
 
+        {stats && <ProjectStatInline stats={stats} />}
+
         <ul className="mb-5 space-y-1.5">
-          {project.outcomes.map((o) => (
+          {project.meta.outcomes.map((o) => (
             <li key={o} className="flex items-start gap-2 text-sm text-secondary">
               <span className="mt-[3px] text-xs" style={{ color: accent }}>
                 &#9679;
@@ -82,8 +111,14 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
           ))}
         </ul>
 
-        <div className="flex flex-wrap gap-2">
-          {project.stack.map((s) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className="rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
+            style={{ color: accent, borderColor: `color-mix(in oklch, ${accent} 30%, transparent)` }}
+          >
+            {STATUS_LABELS[project.status]}
+          </span>
+          {project.meta.stack.map((s) => (
             <span
               key={s}
               className="rounded-full border border-glass-border bg-surface-1/50 px-2.5 py-0.5 font-mono text-[11px] text-muted"
@@ -93,9 +128,9 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
           ))}
         </div>
 
-        {project.links && project.links.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-4">
-            {project.links.map((l) => (
+        {(repoUrl || project.meta.links.length > 0) && (
+          <div className="relative z-20 mt-5 flex flex-wrap gap-4">
+            {project.meta.links.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
@@ -106,6 +141,16 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
                 {l.label} &rarr;
               </a>
             ))}
+            {repoUrl && (
+              <a
+                href={repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-accent-blue hover:underline"
+              >
+                GitHub &rarr;
+              </a>
+            )}
           </div>
         )}
       </motion.article>
