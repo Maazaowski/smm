@@ -1,49 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
+import {
+  Section,
+  inputClass,
+  labelClass,
+  moveItem,
+  textareaClass,
+} from "./editor-primitives";
 import type { AboutContent, Certificate, TimelineEntry } from "@/lib/about-types";
 import { DEFAULT_ABOUT_CONTENT } from "@/lib/about-defaults";
-
-const inputClass =
-  "w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue";
-const textareaClass =
-  "w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue resize-none";
-const labelClass = "text-xs font-medium text-muted uppercase tracking-wider";
-
-function Section({
-  title,
-  children,
-  defaultOpen = true,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <GlassCard className="p-4" hover={false}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between text-left"
-      >
-        <h2 className="text-sm font-medium text-primary">{title}</h2>
-        <span className="text-xs text-muted">{open ? "−" : "+"}</span>
-      </button>
-      {open && <div className="mt-4 space-y-4">{children}</div>}
-    </GlassCard>
-  );
-}
-
-function moveItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
-  const next = [...items];
-  const target = index + direction;
-  if (target < 0 || target >= next.length) return items;
-  [next[index], next[target]] = [next[target], next[index]];
-  return next;
-}
 
 export function AboutEditor() {
   const [content, setContent] = useState<AboutContent>(DEFAULT_ABOUT_CONTENT);

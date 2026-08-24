@@ -10,6 +10,7 @@ import { Grain } from "@/components/ui/grain";
 import { ReadingProgress } from "@/components/ui/reading-progress";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { getAllPosts } from "@/lib/posts";
+import { getAllProjects } from "@/lib/projects";
 import { SITE } from "@/lib/constants";
 import "./globals.css";
 
@@ -69,13 +70,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch posts for command palette — cached per-request via React cache()
-  const allPosts = await getAllPosts().catch(() => []);
+  // Fetch posts and projects for the command palette. Only the searchable
+  // fields cross into the client component — no bodies, no GitHub stats.
+  const [allPosts, allProjects] = await Promise.all([
+    getAllPosts().catch(() => []),
+    getAllProjects().catch(() => []),
+  ]);
   const posts = allPosts.map((p) => ({
     slug: p.slug,
     title: p.frontmatter.title,
     description: p.frontmatter.description,
     tags: p.frontmatter.tags,
+  }));
+  const projects = allProjects.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    description: p.summary || p.description,
   }));
 
   return (
@@ -97,7 +107,7 @@ export default async function RootLayout({
           <CursorGlow />
           <CustomCursor />
           <ReadingProgress />
-          <CommandPalette posts={posts} />
+          <CommandPalette posts={posts} projects={projects} />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

@@ -6,8 +6,9 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { AboutEditor } from "@/components/admin/about-editor";
+import { ProjectsEditor } from "@/components/admin/projects-editor";
 
-type AdminTab = "posts" | "about";
+type AdminTab = "posts" | "projects" | "about";
 
 interface PostEntry {
   slug: string;
@@ -302,6 +303,16 @@ export function AdminPanel() {
               Posts
             </button>
             <button
+              onClick={() => setActiveTab("projects")}
+              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
+                activeTab === "projects"
+                  ? "bg-accent-blue text-white"
+                  : "text-secondary hover:text-primary"
+              }`}
+            >
+              Projects
+            </button>
+            <button
               onClick={() => setActiveTab("about")}
               className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
                 activeTab === "about"
@@ -339,6 +350,8 @@ export function AdminPanel() {
 
       {activeTab === "about" ? (
         <AboutEditor />
+      ) : activeTab === "projects" ? (
+        <ProjectsEditor />
       ) : loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
