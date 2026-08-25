@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { getAllPosts, createPost } from "@/lib/posts";
+import { revalidatePost } from "@/lib/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
       draft,
       publishedAt: publishedAt ? new Date(publishedAt) : undefined,
     });
+    revalidatePost(post.slug);
     return NextResponse.json({ success: true, slug: post.slug });
   } catch (err: unknown) {
     const message = (err as { message?: string })?.message ?? String(err);

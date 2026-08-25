@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { getAboutContent, seedAboutContent, updateAboutContent } from "@/lib/about";
 import { aboutContentSchema } from "@/lib/about-types";
+import { revalidateAbout } from "@/lib/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const data = await updateAboutContent(parsed.data);
+    revalidateAbout();
     return NextResponse.json({
       success: true,
       content: data.content,

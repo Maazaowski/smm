@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { deleteProject, getProjectBySlug, updateProject } from "@/lib/projects";
 import { projectInputSchema } from "@/lib/project-types";
+import { revalidateProject } from "@/lib/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    revalidateProject(project.slug);
     return NextResponse.json({ success: true, slug: project.slug });
   } catch (err) {
     const message = (err as { message?: string })?.message ?? String(err);
@@ -99,6 +101,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    revalidateProject(slug);
     return NextResponse.json({ success: true });
   } catch (err) {
     const message = (err as { message?: string })?.message ?? String(err);

@@ -1,14 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts, getAllTags } from "@/lib/posts";
+import { getAllPosts } from "@/lib/posts";
 import { getProjectSlugs } from "@/lib/projects";
 import { SITE } from "@/lib/constants";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, tags, projects] = await Promise.all([
+  const [posts, projects] = await Promise.all([
     getAllPosts(),
-    getAllTags(),
     getProjectSlugs(),
   ]);
 
@@ -26,10 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8 as const,
   }));
 
-  const tagEntries = tags.map(({ tag }) => ({
-    url: `${SITE.url}/tags/${tag}`,
-    priority: 0.5 as const,
-  }));
 
   return [
     { url: SITE.url, priority: 1.0 },
@@ -38,6 +33,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE.url}/about`, priority: 0.7 },
     ...projectEntries,
     ...postEntries,
-    ...tagEntries,
   ];
 }
