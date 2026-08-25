@@ -144,8 +144,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
 }
 
 .sg-shot {
@@ -158,6 +156,12 @@
   cursor: pointer;
   overflow: hidden;
   aspect-ratio: 4 / 3;
+  /* The hairline rides the tile, not the grid. A last row that does not fill
+     its tracks is the normal case (six shots, four columns), and a panel
+     background would light those empty cells up as slate blocks on black.
+     Each shadow fills the 1px gap from its own side, so the seams still read
+     as one grid. */
+  box-shadow: 0 0 0 1px var(--line);
 }
 
 .sg-shot img {
@@ -179,13 +183,15 @@
   transform: scale(1.02);
 }
 
-.sg-shot[data-portrait="true"] {
-  aspect-ratio: 3 / 4;
+/* An all-portrait set — phone screenshots — gets tall tiles and narrower
+   columns so four still fit a wide row. Set by the gallery from the shots it
+   was handed; see the note in gallery.tsx for why mixed sets stay uniform. */
+.sg-shots[data-orient="portrait"] {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
-/* A portrait set gets narrower columns so four tiles still fit a wide row. */
-.sg-shots:has(.sg-shot[data-portrait="true"]) {
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+.sg-shots[data-orient="portrait"] .sg-shot {
+  aspect-ratio: 3 / 4;
 }
 
 .sg-shot-n {

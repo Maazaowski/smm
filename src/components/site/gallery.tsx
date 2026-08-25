@@ -87,17 +87,28 @@ export function Gallery({ shots }: { shots: Shot[] }) {
 
   const active = open === null ? null : shots[open];
 
+  /* Tile shape is a property of the *set*, not of each image. Grid rows are as
+     tall as their tallest item, so a single 3:4 tile in a row of 4:3 ones sets
+     the row height and leaves the rest floating in a band of empty panel —
+     HotPlate, four browser shots plus two A4 documents, is the set that proved
+     it. So: an all-portrait set (phones) gets tall tiles, and anything mixed
+     falls back to one uniform tile shape and crops. */
+  const portraits = shots.filter((s) => s.h > s.w).length;
+  const orient =
+    portraits === 0
+      ? "landscape"
+      : portraits === shots.length
+        ? "portrait"
+        : "mixed";
+
   return (
     <>
-      <ul className="sg-shots">
+      <ul className="sg-shots" data-orient={orient}>
         {shots.map((s, i) => (
           <li key={s.src}>
             <button
               type="button"
               className="sg-shot"
-              /* Phone screenshots are portrait; a 4:3 tile crops them to the
-                 status bar. Let the tile follow the image instead. */
-              data-portrait={s.h > s.w ? "true" : undefined}
               onClick={(e) => {
                 openerRef.current = e.currentTarget;
                 setOpen(i);

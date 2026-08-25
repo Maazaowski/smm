@@ -331,6 +331,340 @@
   font-size: inherit;
 }
 
+/* ---- code: colour, and the bar controls ----------------------------- */
+
+/*
+ * THE REASON EVERY CODE BLOCK WAS WHITE.
+ *
+ * rehype-pretty-code is configured with a dual theme, so shiki does not write
+ * a colour — it writes --shiki-dark and --shiki-light onto every token span
+ * and leaves the page to choose. Nothing here ever chose, so the declarations
+ * sat there unread and 108 perfectly tokenised spans all inherited the same
+ * white. Signal is a dark-only surface; take the dark half.
+ */
+.sg-prose .fn-code pre code span {
+  color: var(--shiki-dark, currentColor);
+}
+
+/* Opt-in emphasis, once an author wants it: ```py {2,5} for lines, or
+   ```py /needle/ for a run of characters. */
+.sg-prose .fn-code [data-highlighted-line] {
+  background: var(--signal-dim);
+  box-shadow: inset 2px 0 0 var(--signal);
+}
+
+.sg-prose .fn-code [data-highlighted-chars] {
+  background: var(--signal-dim);
+  border-radius: 2px;
+  padding: 0 3px;
+}
+
+.sg-prose .fn-code-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sg-prose .fn-code-btn {
+  appearance: none;
+  background: none;
+  border: 1px solid transparent;
+  padding: 1px 7px;
+  /* Inherits the bar's mono/uppercase/tracking so it reads as a label that
+     happens to be pressable, not as a button dropped into a caption. */
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--faint);
+  cursor: pointer;
+  transition:
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+
+.sg-prose .fn-code-btn:hover {
+  color: var(--white);
+  border-color: var(--line);
+}
+
+.sg-prose .fn-code-btn:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 1px;
+  color: var(--white);
+}
+
+.sg-prose .fn-code-btn[data-state="copied"] {
+  color: var(--signal);
+}
+
+.sg-prose .fn-code-btn[data-state="failed"] {
+  color: var(--bad);
+}
+
+/* ---- mermaid ------------------------------------------------------- */
+
+/*
+ * A diagram borrows the code block's chrome — same hairline, same caption bar —
+ * because it occupies the same slot in the reading flow and arrives from the
+ * same kind of fence. What it does not borrow is the monospace body: the SVG
+ * carries its own type, sized from the tokens the renderer reads off this host.
+ */
+.sg-prose .fn-mermaid .fn-mermaid-host {
+  padding: 18px 16px;
+  /* Wide graphs scroll here rather than forcing the article column open. */
+  overflow-x: auto;
+}
+
+/* Nothing has been measured yet, so hold a little space and let the diagram
+   land in it instead of shoving the rest of the essay down the page. */
+.sg-prose .fn-mermaid[data-state="pending"] .fn-mermaid-host {
+  min-height: 160px;
+}
+
+.sg-prose .fn-mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Mermaid emits its own <style> block, but edge labels and cluster titles fall
+   back to whatever the page gives them. */
+.sg-prose .fn-mermaid .edgeLabel,
+.sg-prose .fn-mermaid .nodeLabel,
+.sg-prose .fn-mermaid .cluster-label {
+  font-family: var(--mono);
+}
+
+.sg-prose .fn-mermaid[data-state="failed"] .fn-code-bar {
+  color: var(--bad);
+}
+
+.sg-prose .fn-mermaid-hint {
+  padding: 0 16px 12px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ---- mermaid: what the colours mean --------------------------------- */
+
+/*
+ * EVERYTHING BELOW HAS TO SHOUT, AND HERE IS WHY.
+ *
+ * Mermaid ships its theme inside the SVG, scoped to the per-render id it just
+ * generated — `#mermaid-a1b2 .node rect { fill: … }`. That is an id selector.
+ * No amount of class nesting out here outranks it, so overriding mermaid's own
+ * paint is the one place in this stylesheet where !important is the correct
+ * tool rather than a surrender. It is confined to properties mermaid itself
+ * sets: stroke, fill, and the dash pattern.
+ *
+ * The palette is the site's existing semantic one, not a new decorative one.
+ * Signal spends colour on state and nothing else: cyan for the branch that
+ * passed, amber for the branch that did not, white for the structural
+ * landmarks (where the flow starts, where it forks), and the neutral edge grey
+ * for every ordinary step in between. A diagram with no labelled branches
+ * therefore stays exactly as monochrome as it was.
+ */
+
+.sg-prose .fn-mermaid .node > .label-container {
+  transition:
+    stroke 0.2s var(--ease),
+    fill 0.2s var(--ease);
+}
+
+/* Structure first… */
+.sg-prose .fn-mermaid .node[data-role="entry"] > .label-container,
+.sg-prose .fn-mermaid .node[data-role="decision"] > .label-container {
+  stroke: var(--white) !important;
+}
+
+/* …then meaning, which wins where it exists: a fork on a failing branch is
+   more usefully amber than it is white. */
+.sg-prose .fn-mermaid .node[data-tone="pass"] > .label-container {
+  stroke: var(--signal) !important;
+  fill: var(--signal-dim) !important;
+}
+
+.sg-prose .fn-mermaid .node[data-tone="fail"] > .label-container {
+  stroke: var(--warn) !important;
+  fill: rgba(232, 176, 79, 0.1) !important;
+}
+
+.sg-prose .fn-mermaid path.flowchart-link[data-tone="pass"] {
+  stroke: var(--signal) !important;
+}
+
+.sg-prose .fn-mermaid path.flowchart-link[data-tone="fail"] {
+  stroke: var(--warn) !important;
+}
+
+.sg-prose .fn-mermaid .edgeLabel[data-tone="pass"] span {
+  color: var(--signal) !important;
+}
+
+.sg-prose .fn-mermaid .edgeLabel[data-tone="fail"] span {
+  color: var(--warn) !important;
+}
+
+/*
+ * Arrowheads live in shared <marker> defs, so they cannot be coloured per
+ * edge — except by context-stroke, which resolves against whichever path is
+ * doing the referencing. Browsers that do not implement it drop the
+ * declaration as invalid and keep mermaid's grey, which is a clean fallback
+ * rather than a broken one.
+ */
+.sg-prose .fn-mermaid marker .arrowMarkerPath {
+  fill: context-stroke !important;
+}
+
+/* ---- mermaid: following the flow ------------------------------------ */
+
+.sg-prose .fn-mermaid .node {
+  cursor: pointer;
+}
+
+.sg-prose .fn-mermaid .node:focus-visible {
+  outline: none;
+}
+
+.sg-prose .fn-mermaid .node:focus-visible > .label-container {
+  stroke: var(--signal) !important;
+  stroke-width: 2px !important;
+}
+
+/*
+ * The intro walk. Nodes and their outgoing arrows were numbered breadth-first
+ * on the way out of flow-graph.ts, so stepping the delay by that number draws
+ * the graph in the order you would trace it: box, arrow, box, arrow.
+ *
+ * Only opacity is animated on nodes. Mermaid positions each one with a
+ * `transform` ATTRIBUTE, and a CSS transform would replace it outright rather
+ * than compose with it — every node would animate from the top-left corner of
+ * the canvas. Arrows get the drawn-on effect instead, which is where the sense
+ * of direction actually comes from.
+ */
+@keyframes fn-node-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fn-edge-in {
+  from {
+    opacity: 0;
+    stroke-dashoffset: var(--fn-len);
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+.sg-prose .fn-mermaid[data-anim="run"] .node,
+.sg-prose .fn-mermaid[data-anim="run"] .edgeLabel {
+  opacity: 0;
+  animation: fn-node-in 0.34s var(--ease) forwards;
+  animation-delay: calc(var(--fn-step, 0) * 90ms);
+}
+
+.sg-prose .fn-mermaid[data-anim="run"] path.flowchart-link {
+  opacity: 0;
+  stroke-dasharray: var(--fn-len) !important;
+  animation: fn-edge-in 0.42s var(--ease) forwards;
+  animation-delay: calc(var(--fn-step, 0) * 90ms);
+}
+
+/*
+ * Tracing. Hovering, focusing or tapping a step dims the whole graph and
+ * leaves only what that step leads to — which is the question a flowchart is
+ * usually being asked. The lit arrows also start moving, because on a diagram
+ * with a loop in it, direction is the one thing a still picture cannot say.
+ */
+@keyframes fn-edge-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.sg-prose .fn-mermaid[data-trace="on"] .node,
+.sg-prose .fn-mermaid[data-trace="on"] path.flowchart-link,
+.sg-prose .fn-mermaid[data-trace="on"] .edgeLabel {
+  opacity: 0.16;
+  transition: opacity 0.18s var(--ease);
+}
+
+.sg-prose .fn-mermaid[data-trace="on"] [data-lit="1"] {
+  opacity: 1;
+}
+
+.sg-prose .fn-mermaid[data-trace="on"] path.flowchart-link[data-lit="1"] {
+  stroke-dasharray: 5 5 !important;
+  animation: fn-edge-flow 0.6s linear infinite;
+}
+
+.sg-prose .fn-legend {
+  display: flex;
+  gap: 12px;
+}
+
+.sg-prose .fn-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sg-prose .fn-legend span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border: 1px solid currentColor;
+}
+
+.sg-prose .fn-legend [data-tone="pass"] {
+  color: var(--signal);
+}
+
+.sg-prose .fn-legend [data-tone="fail"] {
+  color: var(--warn);
+}
+
+/* The bar has to hold a language, a legend and a control; the legend is the
+   one that can be inferred from the diagram itself, so it goes first. */
+@media (max-width: 620px) {
+  .sg-prose .fn-legend,
+  .sg-prose .fn-mermaid-hint {
+    display: none;
+  }
+}
+
+/*
+ * Motion here is explanatory, not decorative — but it is still motion, and a
+ * reader who has asked for less of it should get the finished picture rather
+ * than a shorter animation. The component skips scheduling the intro too;
+ * this is the belt to that pair of braces.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .sg-prose .fn-mermaid[data-anim="run"] .node,
+  .sg-prose .fn-mermaid[data-anim="run"] .edgeLabel,
+  .sg-prose .fn-mermaid[data-anim="run"] path.flowchart-link {
+    opacity: 1;
+    stroke-dasharray: none !important;
+    animation: none;
+  }
+
+  .sg-prose .fn-mermaid[data-trace="on"] path.flowchart-link[data-lit="1"] {
+    animation: none;
+  }
+}
+
 .sg-prose .fn-figure {
   max-width: 100%;
   height: auto;
