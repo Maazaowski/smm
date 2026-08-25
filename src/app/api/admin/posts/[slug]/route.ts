@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { getPostBySlug, updatePost, deletePost } from "@/lib/posts";
+import { revalidatePost } from "@/lib/revalidate";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const updated = await updatePost(slug, { title, description, category, tags, draft, content });
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    revalidatePost(slug);
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message = (err as { message?: string })?.message ?? String(err);
@@ -57,6 +59,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const deleted = await deletePost(slug);
     if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    revalidatePost(slug);
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message = (err as { message?: string })?.message ?? String(err);

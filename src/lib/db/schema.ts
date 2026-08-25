@@ -107,3 +107,33 @@ export const projectStats = pgTable("project_stats", {
 
 export type DbProjectStats = typeof projectStats.$inferSelect;
 export type NewProjectStats = typeof projectStats.$inferInsert;
+
+/**
+ * Third-party references, shown on the homepage.
+ *
+ * `draft` defaults to TRUE. A testimonial is a claim made by a named person at
+ * a named company, so nothing reaches the public site because a form was
+ * submitted — it appears when it is deliberately published, the same rule that
+ * should have applied to posts.
+ *
+ * `sourceUrl` is where the quote can be checked: a LinkedIn recommendation, an
+ * email thread, a Topmate review. Optional, but a reference nobody can verify
+ * is worth less than no reference.
+ */
+export const testimonials = pgTable("testimonials", {
+  id: serial("id").primaryKey(),
+  quote: text("quote").notNull(),
+  author: text("author").notNull(),
+  role: text("role").notNull(),
+  company: text("company").notNull(),
+  sourceUrl: text("source_url"),
+  draft: boolean("draft").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export type DbTestimonial = typeof testimonials.$inferSelect;
+export type NewTestimonial = typeof testimonials.$inferInsert;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { syncAllProjects } from "@/lib/github/sync";
+import { revalidateProjectsIndex } from "@/lib/revalidate";
 
 export const dynamic = "force-dynamic";
 /** The activity-stats endpoint answers 202 and needs retries; 10s is not enough. */
@@ -14,6 +15,8 @@ export async function POST() {
 
   try {
     const summary = await syncAllProjects();
+    // Stats render on the project pages, so a sync changes public output.
+    revalidateProjectsIndex();
     return NextResponse.json(summary);
   } catch (err) {
     const message = (err as { message?: string })?.message ?? String(err);

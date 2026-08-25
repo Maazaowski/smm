@@ -1,118 +1,65 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { CursorGlow } from "@/components/ui/cursor-glow";
-import { CustomCursor } from "@/components/ui/custom-cursor";
-import { Grain } from "@/components/ui/grain";
-import { ReadingProgress } from "@/components/ui/reading-progress";
-import { CommandPalette } from "@/components/ui/command-palette";
-import { getAllPosts } from "@/lib/posts";
-import { getAllProjects } from "@/lib/projects";
 import { SITE } from "@/lib/constants";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
+/**
+ * Root layout.
+ *
+ * Document shell only: html, body, font variables, analytics. No chrome, no
+ * providers, no ambient layers.
+ *
+ * The public site's shell lives in (site)/layout.tsx and the admin's in
+ * (admin)/layout.tsx. That split is what stops the admin paying for the site's
+ * chrome and vice versa — the previous arrangement put everything in the root
+ * layout, which meant every route shipped the command palette's cmdk and
+ * fuse.js whether it rendered them or not.
+ *
+ * ThemeProvider is gone with it. The site commits to one look; nothing under
+ * src/app/(site) reads a theme.
+ */
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const jetbrains = JetBrains_Mono({
+  variable: "--sg-mono",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  weight: ["400"],
-  style: ["normal", "italic"],
-  subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: SITE.title,
-    template: `%s | ${SITE.title}`,
+    default: `${SITE.author.name} — Software & AI Engineer`,
+    template: `%s · Maaz`,
   },
   description: SITE.description,
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": "/rss.xml" },
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: SITE.url,
-    siteName: SITE.name,
-    title: SITE.title,
+    siteName: SITE.author.name,
     description: SITE.description,
   },
+  twitter: { card: "summary_large_image" },
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
-    shortcut: "/favicon.svg",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-  alternates: {
-    types: {
-      "application/rss+xml": "/rss.xml",
-    },
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: "/icon.svg",
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // Fetch posts and projects for the command palette. Only the searchable
-  // fields cross into the client component — no bodies, no GitHub stats.
-  const [allPosts, allProjects] = await Promise.all([
-    getAllPosts().catch(() => []),
-    getAllProjects().catch(() => []),
-  ]);
-  const posts = allPosts.map((p) => ({
-    slug: p.slug,
-    title: p.frontmatter.title,
-    description: p.frontmatter.description,
-    tags: p.frontmatter.tags,
-  }));
-  const projects = allProjects.map((p) => ({
-    slug: p.slug,
-    title: p.title,
-    description: p.summary || p.description,
-  }));
-
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} h-full`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-full flex flex-col antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {/* Ambient warm aurora — amber / terracotta / rose, drifting slowly */}
-          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="animate-aurora-a absolute top-[-25%] left-[-15%] h-[680px] w-[680px] rounded-full bg-[radial-gradient(circle,oklch(0.78_0.14_70/0.18),transparent_70%)] dark:bg-[radial-gradient(circle,oklch(0.7_0.15_60/0.16),transparent_70%)]" />
-            <div className="animate-aurora-b absolute bottom-[-20%] right-[-15%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,oklch(0.7_0.16_35/0.14),transparent_70%)] dark:bg-[radial-gradient(circle,oklch(0.62_0.16_30/0.14),transparent_70%)]" />
-            <div className="animate-aurora-a absolute top-[30%] right-[10%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,oklch(0.72_0.13_20/0.1),transparent_70%)]" />
-          </div>
-
-          <Grain />
-          <CursorGlow />
-          <CustomCursor />
-          <ReadingProgress />
-          <CommandPalette posts={posts} projects={projects} />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <Analytics />
-        </ThemeProvider>
+    <html lang="en" className={jetbrains.variable}>
+      <body>
+        {children}
+        <Analytics />
       </body>
     </html>
   );

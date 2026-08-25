@@ -1,0 +1,345 @@
+/*
+ * Case studies and the screenshot gallery.
+ *
+ * Same tokens as the rest of Signal. The only new idea here is the shot grid,
+ * which sits the screenshots on their own panel rather than bleeding them into
+ * the black ground — these are light UIs and they need an edge to sit against.
+ */
+
+.sg-case {
+  padding-block: clamp(84px, 10vw, 132px) clamp(56px, 8vw, 104px);
+  max-width: 1240px;
+}
+
+.sg-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: color 0.2s var(--ease);
+  margin-bottom: 26px;
+}
+
+.sg-back:hover {
+  color: var(--white);
+}
+
+.sg-case-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: end;
+  margin-bottom: clamp(24px, 3vw, 40px);
+}
+
+.sg-case-plate {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--void);
+  margin-bottom: clamp(48px, 7vw, 96px);
+}
+
+/* ---- spec ---------------------------------------------------------- */
+
+.sg-case-spec {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: start;
+  margin-bottom: clamp(56px, 8vw, 104px);
+}
+
+.sg-case-spec dl {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.sg-case-spec dl > div {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.sg-case-spec dt {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding-top: 3px;
+}
+
+.sg-case-spec dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
+.sg-case-link {
+  display: block;
+  color: var(--white);
+  transition: color 0.2s var(--ease);
+}
+
+.sg-case-link:hover {
+  color: var(--dim);
+}
+
+.sg-case-body p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text);
+  max-width: 60ch;
+}
+
+/* ---- outcomes ------------------------------------------------------ */
+
+.sg-case-outcomes {
+  list-style: none;
+  counter-reset: oc;
+  padding: 0;
+  margin: 0 0 clamp(56px, 8vw, 104px);
+  max-width: 68ch;
+  border-top: 1px solid var(--line);
+}
+
+.sg-case-outcomes li {
+  counter-increment: oc;
+  position: relative;
+  padding: 15px 0 15px 46px;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.sg-case-outcomes li::before {
+  content: counter(oc, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 19px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+/* ---- shot grid ----------------------------------------------------- */
+
+.sg-shots {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 clamp(56px, 8vw, 104px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.sg-shot {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: var(--raise);
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+.sg-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  /* Held back at rest so a wall of light UI does not glare off a black page. */
+  filter: brightness(0.7) saturate(0.85);
+  transition:
+    filter 0.4s var(--ease),
+    transform 0.6s var(--ease);
+}
+
+.sg-shot:hover img,
+.sg-shot:focus-visible img {
+  filter: brightness(1) saturate(1);
+  transform: scale(1.02);
+}
+
+.sg-shot[data-portrait="true"] {
+  aspect-ratio: 3 / 4;
+}
+
+/* A portrait set gets narrower columns so four tiles still fit a wide row. */
+.sg-shots:has(.sg-shot[data-portrait="true"]) {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.sg-shot-n {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--white);
+  mix-blend-mode: difference;
+}
+
+/* ---- lightbox ------------------------------------------------------ */
+
+.sg-lightbox-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.92);
+  animation: sg-fade 0.16s var(--ease);
+}
+
+@keyframes sg-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.sg-lightbox {
+  position: fixed;
+  inset: clamp(16px, 4vh, 48px) clamp(16px, 4vw, 64px);
+  z-index: 91;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: sg-rise 0.2s var(--ease);
+}
+
+.sg-lightbox-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.sg-lightbox-ctrls {
+  display: flex;
+  gap: 8px;
+}
+
+.sg-lightbox-ctrls button {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  padding: 7px 12px;
+  min-height: 32px;
+  min-width: 40px;
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.sg-lightbox-ctrls button:hover {
+  color: var(--white);
+  border-color: var(--edge);
+}
+
+.sg-lightbox-img {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.sg-lightbox-img img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.sg-lightbox-cap {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--dim);
+  max-width: 72ch;
+}
+
+/* ---- prev / next --------------------------------------------------- */
+
+.sg-case-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.sg-case-nav a {
+  background: var(--void);
+  padding: clamp(20px, 3vw, 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background-color 0.3s var(--ease);
+}
+
+.sg-case-nav a:hover {
+  background: var(--raise);
+}
+
+.sg-case-next {
+  text-align: right;
+  align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+  .sg-case-head,
+  .sg-case-spec {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .sg-case-plate {
+    aspect-ratio: 16 / 10;
+  }
+  .sg-case-nav {
+    grid-template-columns: 1fr;
+  }
+  .sg-case-next {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
+.sg-ref-src {
+  color: var(--dim);
+  margin-top: 4px;
+  transition: color 0.2s var(--ease);
+}
+
+.sg-ref-src:hover {
+  color: var(--white);
+}

@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { AboutEditor } from "@/components/admin/about-editor";
 import { ProjectsEditor } from "@/components/admin/projects-editor";
+import { TestimonialsEditor } from "@/components/admin/testimonials-editor";
+import { useDraftGuard, type DraftStatus } from "@/hooks/use-draft-guard";
 
-type AdminTab = "posts" | "projects" | "about";
+type AdminTab = "posts" | "projects" | "about" | "testimonials";
 
 interface PostEntry {
   slug: string;
@@ -24,6 +26,7 @@ export function AdminPanel() {
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [sendingSlug, setSendingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
   const router = useRouter();
@@ -38,24 +41,50 @@ export function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("posts");
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  // Everything the editor holds. Serialized for the draft guard so an
+  // accidental refresh or a stray "Back" no longer destroys unsaved writing.
+  const draftValue = { title, description, category, tags, isDraft, body };
+  const draft = useDraftGuard({
+    key: editSlug ?? "new-post",
+    value: draftValue,
+    enabled: showEditor,
+    onSave: () => {
+      if (!saving && title && description) void handleSave();
+    },
+  });
 
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch("/api/admin/posts");
-      if (res.ok) {
+  const [reloadKey, setReloadKey] = useState(0);
+
+  /** Refetch the post list. The effect below subscribes to this. */
+  const fetchPosts = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/posts");
+        if (!res.ok) throw new Error(`Failed to load posts (${res.status})`);
         const data = await res.json();
+        if (cancelled) return;
         setPosts(data.posts);
         setSubscriberCount(data.subscriberCount ?? 0);
+        setLoadError(null);
+      } catch (err) {
+        // Previously an empty catch, which made a failed request look exactly
+        // like an empty list.
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : String(err));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  };
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const handleLogout = async () => {
     await fetch("/api/auth", { method: "DELETE" });
@@ -122,17 +151,31 @@ export function AdminPanel() {
       });
 
       if (res.ok) {
+        draft.markSaved();
         setShowEditor(false);
         fetchPosts();
       } else {
         const data = await res.json().catch(() => ({}));
+        draft.setStatus("error");
         alert(`Failed to save post: ${data.error ?? res.statusText}`);
       }
     } catch (err) {
+      draft.setStatus("error");
       alert(`Error: ${String(err)}`);
     } finally {
       setSaving(false);
     }
+  };
+
+  // Leaving the editor with unsaved work used to discard it silently.
+  const handleCloseEditor = () => {
+    if (
+      draft.dirty &&
+      !confirm("You have unsaved changes. Leave the editor and lose them?")
+    ) {
+      return;
+    }
+    setShowEditor(false);
   };
 
   const handleDelete = async (slug: string) => {
@@ -192,13 +235,49 @@ export function AdminPanel() {
           <h1 className="font-display text-2xl text-primary">
             {editSlug ? "Edit Post" : "New Post"}
           </h1>
-          <button
-            onClick={() => setShowEditor(false)}
-            className="text-sm text-secondary hover:text-primary"
-          >
-            &larr; Back to posts
-          </button>
+          <div className="flex items-center gap-4">
+            <DraftStatusIndicator status={draft.status} dirty={draft.dirty} />
+            <button
+              onClick={handleCloseEditor}
+              className="text-sm text-secondary hover:text-primary"
+            >
+              &larr; Back to posts
+            </button>
+          </div>
         </div>
+
+        {draft.recovered && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3">
+            <p className="text-sm text-primary">
+              Unsaved changes from{" "}
+              {new Date(draft.recovered.at).toLocaleString()} were recovered
+              from this browser.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const v = draft.recovered!.value;
+                  setTitle(v.title);
+                  setDescription(v.description);
+                  setCategory(v.category);
+                  setTags(v.tags);
+                  setIsDraft(v.isDraft);
+                  setBody(v.body);
+                  draft.dismissRecovered();
+                }}
+                className="rounded-lg bg-accent-blue px-3 py-1.5 text-xs font-medium text-white"
+              >
+                Restore them
+              </button>
+              <button
+                onClick={draft.dismissRecovered}
+                className="rounded-lg border border-glass-border px-3 py-1.5 text-xs text-secondary hover:text-primary"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Editor */}
@@ -263,8 +342,8 @@ export function AdminPanel() {
               {saving
                 ? "Saving..."
                 : editSlug
-                  ? "Update Post"
-                  : "Create Post"}
+                  ? "Update Post  ⌘S"
+                  : "Create Post  ⌘S"}
             </button>
           </div>
 
@@ -322,6 +401,16 @@ export function AdminPanel() {
             >
               About
             </button>
+            <button
+              onClick={() => setActiveTab("testimonials")}
+              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
+                activeTab === "testimonials"
+                  ? "bg-accent-blue text-white"
+                  : "text-secondary hover:text-primary"
+              }`}
+            >
+              References
+            </button>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -348,10 +437,16 @@ export function AdminPanel() {
         </div>
       </div>
 
-      {activeTab === "about" ? (
+      {activeTab === "testimonials" ? (
+        <TestimonialsEditor />
+      ) : activeTab === "about" ? (
         <AboutEditor />
       ) : activeTab === "projects" ? (
         <ProjectsEditor />
+      ) : loadError ? (
+        <GlassCard className="p-8 text-center" hover={false}>
+          <p className="text-error text-sm">{loadError}</p>
+        </GlassCard>
       ) : loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -423,4 +518,35 @@ export function AdminPanel() {
       )}
     </div>
   );
+}
+
+/**
+ * Shows whether the editor's work is safe. "Unsaved" is the important state —
+ * it is the one that used to be invisible right up until the work was gone.
+ */
+function DraftStatusIndicator({
+  status,
+  dirty,
+}: {
+  status: DraftStatus;
+  dirty: boolean;
+}) {
+  if (status === "error") {
+    return <span className="text-xs text-error">Save failed</span>;
+  }
+  if (status === "saving") {
+    return <span className="text-xs text-muted">Saving…</span>;
+  }
+  if (dirty) {
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-warning">
+        <span className="h-1.5 w-1.5 rounded-full bg-warning" />
+        Unsaved changes — kept in this browser
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return <span className="text-xs text-success">Saved</span>;
+  }
+  return null;
 }
