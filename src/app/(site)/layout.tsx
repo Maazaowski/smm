@@ -30,6 +30,23 @@ export default function SiteLayout({
 }) {
   return (
     <div className="sg">
+      {/*
+        Clash Display and Satoshi, from Fontshare. This link is in the (site)
+        layout rather than the root so the admin does not pay for two display
+        faces it never renders.
+
+        It is a third-party request on the critical path and should be
+        self-hosted through next/font/local before this goes live — the files
+        are SIL-licensed and can ship from public/fonts. Until then the link
+        has to be here: without it the wordmark silently falls back to
+        system-ui, which I only caught because a cached browser was hiding it.
+      */}
+      <link rel="preconnect" href="https://api.fontshare.com" />
+      <link
+        rel="stylesheet"
+        href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap"
+      />
+
       <MotionFlag />
       <div className="sg-grid" aria-hidden="true" />
       <Progress />
