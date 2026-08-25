@@ -1,0 +1,1975 @@
+/*
+ * FIELD NOTEBOOK — design system for the redesign prototype.
+ *
+ * Scoped entirely under .fn so it cannot leak into the production site. It
+ * deliberately shares nothing with globals.css: no glass tokens, no aurora, no
+ * accent-blue/accent-purple pair, no rounded-* scale.
+ *
+ * The one idea everything derives from: STRUCTURE IS MONO, ARGUMENT IS SERIF.
+ * Anything the machine knows — dates, counts, slugs, status, navigation, code —
+ * is set in mono and aligned to a column. Anything a person wrote is set in
+ * serif and given room. A reader can tell those two apart without reading a
+ * word, which is what a well-kept notebook does.
+ *
+ * Rules, not boxes. Hierarchy comes from hairlines, indentation and type size.
+ * There is no card in this system, and no border-radius above 2px.
+ */
+
+.fn {
+  /* --- light: cool grey-green paper, graphite ink ------------------------ */
+  --paper: #edefec;
+  --sheet: #f8f9f7;
+  --sunk: #e3e6e2;
+  --ink: #15181a;
+  --ink-2: #3a4145;
+  --ink-3: #5f6865;
+  --rule: #cfd4ce;
+  --rule-soft: #dfe3de;
+  --rule-hard: #15181a;
+  /* The only decorative hue in the system. Blueprint petrol, not a gradient. */
+  --mark: #0f4c5c;
+  --mark-wash: #dde8ea;
+  /* Semantic state. Never used for decoration. */
+  --live: #1c6344;
+  --draft: #7d5f0a;
+  --danger: #92271f;
+  --danger-wash: #f4e2e0;
+
+  --shadow-lift: 0 1px 0 rgba(21, 24, 26, 0.06);
+
+  /* --- type ------------------------------------------------------------- */
+  --mono: var(--fn-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --serif: var(--fn-serif), Georgia, "Times New Roman", serif;
+
+  /* Type scale. Five sizes for argument, four for structure. Nothing else. */
+  --t-lede: clamp(20px, 2.4vw, 24px);
+  --t-body: 19px;
+  --t-small: 16px;
+  --t-h1: clamp(34px, 5.2vw, 52px);
+  --t-h2: clamp(23px, 2.6vw, 28px);
+
+  --m-lg: 13px;
+  --m-base: 12px;
+  --m-sm: 11px;
+  --m-xs: 10px;
+
+  /* --- rhythm ------------------------------------------------------------ */
+  --gutter: 148px; /* the mono margin rail on wide screens */
+  /* Measured, not declared: 65ch of Newsreader renders ~75 characters,
+     which is the same trap production fell into. 37rem measures ~66. */
+  --measure: 37rem;
+  --page: 1180px;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: var(--t-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis-weight: none;
+
+  /* The prototype owns the whole viewport; the production body background
+     must not show through below short pages. */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.fn > main {
+  flex: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fn:not([data-fn-theme="light"]) {
+    --paper: #101315;
+    --sheet: #171b1d;
+    --sunk: #0b0e0f;
+    --ink: #e9edeb;
+    --ink-2: #b4bcb9;
+    --ink-3: #8b9491;
+    --rule: #272e30;
+    --rule-soft: #1d2325;
+    --rule-hard: #e9edeb;
+    --mark: #74bccf;
+    --mark-wash: #10262c;
+    --live: #5cbe8e;
+    --draft: #cbae5c;
+    --danger: #e4767a;
+    --danger-wash: #2b1517;
+    --shadow-lift: 0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+.fn[data-fn-theme="dark"] {
+  --paper: #101315;
+  --sheet: #171b1d;
+  --sunk: #0b0e0f;
+  --ink: #e9edeb;
+  --ink-2: #b4bcb9;
+  --ink-3: #8b9491;
+  --rule: #272e30;
+  --rule-soft: #1d2325;
+  --rule-hard: #e9edeb;
+  --mark: #74bccf;
+  --mark-wash: #10262c;
+  --live: #5cbe8e;
+  --draft: #cbae5c;
+  --danger: #e4767a;
+  --danger-wash: #2b1517;
+  --shadow-lift: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================================================
+   PRIMITIVES
+   ======================================================================== */
+
+.fn *,
+.fn *::before,
+.fn *::after {
+  box-sizing: border-box;
+}
+
+.fn ::selection {
+  background: var(--mark);
+  color: var(--paper);
+}
+
+/* One focus treatment for the entire system. */
+.fn :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--mark);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+.fn a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Mono is the voice of the machine: labels, data, chrome. */
+.fn-mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
+}
+
+.fn-label {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.fn-meta {
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.fn-page {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.fn-measure {
+  max-width: var(--measure);
+}
+
+/* ========================================================================
+   THE SPINE — persistent navigation
+   ======================================================================== */
+
+.fn-spine {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+
+.fn-spine-inner {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+/* The wordmark: name in serif, handle in mono, on one baseline. */
+.fn-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-right: auto;
+  min-height: 28px;
+  padding-block: 3px;
+}
+
+.fn-wordmark b {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.fn-wordmark span {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  line-height: 1;
+}
+
+.fn-nav {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+
+.fn-nav a {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  color: var(--ink-3);
+  padding: 4px 0;
+  position: relative;
+  transition: color 0.14s ease;
+}
+
+.fn-nav a:hover {
+  color: var(--ink);
+}
+
+.fn-nav a[data-current="true"] {
+  color: var(--ink);
+}
+
+/* Current page marker: a rule under the item, not a pill around it. */
+.fn-nav a[data-current="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--rule-hard);
+}
+
+.fn-spine-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fn-tool {
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  background: none;
+  border: 1px solid var(--rule);
+  padding: 5px 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.fn-tool:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+
+.fn-kbd {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  border: 1px solid var(--rule);
+  padding: 1px 4px;
+  line-height: 1.4;
+}
+
+/* ========================================================================
+   THE LEDGER — the row list that replaces every card grid
+   ======================================================================== */
+
+.fn-ledger {
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-row {
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr auto;
+  gap: 0 26px;
+  align-items: baseline;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
+  transition: background-color 0.14s ease;
+}
+
+.fn-row:hover {
+  background: var(--sheet);
+}
+
+/* The hover marker is a rule in the margin — the notebook's pencil tick. */
+.fn-row::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  background: var(--mark);
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+
+.fn-row:hover::before,
+.fn-row:focus-within::before {
+  opacity: 1;
+}
+
+.fn-row-gutter {
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fn-row-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.011em;
+  color: var(--ink);
+  margin: 0 0 5px;
+  text-wrap: balance;
+}
+
+.fn-row:hover .fn-row-title {
+  color: var(--mark);
+}
+
+.fn-row-dek {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.fn-row-aside {
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================
+   STATE — the only place colour is allowed to mean something
+   ======================================================================== */
+
+.fn-state {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-3);
+}
+
+.fn-state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.fn-state[data-state="live"] {
+  color: var(--live);
+}
+.fn-state[data-state="draft"] {
+  color: var(--draft);
+}
+.fn-state[data-state="error"] {
+  color: var(--danger);
+}
+.fn-state[data-state="idle"] {
+  color: var(--ink-3);
+}
+
+/* ========================================================================
+   TYPE — the reading experience
+   ======================================================================== */
+
+.fn h1,
+.fn h2,
+.fn h3 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.fn-title {
+  font-size: var(--t-h1);
+  line-height: 1.04;
+  letter-spacing: -0.028em;
+}
+
+.fn-lede {
+  font-size: var(--t-lede);
+  line-height: 1.42;
+  color: var(--ink-2);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+/* --- prose ------------------------------------------------------------- */
+
+.fn-prose {
+  max-width: var(--measure);
+  min-width: 0;
+  font-size: var(--t-body);
+  line-height: 1.68;
+  color: var(--ink-2);
+}
+
+.fn-prose > * + * {
+  margin-top: 1.45em;
+}
+
+/*
+ * No `margin: 0` here. `.fn-prose p` is (0,1,1) and would beat the
+ * `.fn-prose > * + *` sibling rule at (0,1,0), which is exactly how every
+ * paragraph in this prototype ended up with zero separation while figures and
+ * headings got theirs. Reset the first child instead.
+ */
+.fn-prose p {
+  text-wrap: pretty;
+}
+
+.fn-prose > :first-child {
+  margin-top: 0;
+}
+
+/*
+ * Section headings are headings, not links. The anchor sits in the margin and
+ * only appears on hover — the opposite of the current site, where every h2
+ * renders as an amber underlined hyperlink.
+ */
+.fn-prose h2 {
+  font-size: var(--t-h2);
+  line-height: 1.2;
+  color: var(--ink);
+  margin-top: 2.1em;
+  margin-bottom: 0.55em;
+  padding-top: 0.7em;
+  border-top: 1px solid var(--rule);
+  position: relative;
+}
+
+.fn-prose h3 {
+  font-size: 21px;
+  color: var(--ink);
+  margin-top: 1.7em;
+  margin-bottom: 0.4em;
+}
+
+.fn-prose h2 .fn-anchor,
+.fn-prose h3 .fn-anchor {
+  position: absolute;
+  left: -1.35em;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 0.62em;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+  text-decoration: none;
+}
+
+.fn-prose h2:hover .fn-anchor,
+.fn-prose h3:hover .fn-anchor,
+.fn-prose .fn-anchor:focus-visible {
+  opacity: 1;
+}
+
+.fn-prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Body links are underlined in ink, marked in petrol only on hover. */
+.fn-prose a:not(.fn-anchor) {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color 0.14s ease,
+    text-decoration-color 0.14s ease;
+}
+
+.fn-prose a:not(.fn-anchor):hover {
+  color: var(--mark);
+  text-decoration-color: var(--mark);
+}
+
+.fn-prose ul,
+.fn-prose ol {
+  padding-left: 0;
+  list-style: none;
+  margin-top: 1.15em;
+}
+
+.fn-prose li {
+  position: relative;
+  padding-left: 1.5em;
+  margin-top: 0.4em;
+}
+
+/* List markers are mono, because the numbering is structure, not argument. */
+.fn-prose ul > li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 0.82em;
+}
+
+.fn-prose ol {
+  counter-reset: fn-ol;
+}
+
+.fn-prose ol > li {
+  counter-increment: fn-ol;
+}
+
+.fn-prose ol > li::before {
+  content: counter(fn-ol, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 0.7em;
+  top: 0.36em;
+  font-variant-numeric: tabular-nums;
+}
+
+.fn-prose blockquote {
+  margin: 1.6em 0;
+  padding-left: 1.3em;
+  border-left: 2px solid var(--rule-hard);
+  color: var(--ink);
+  font-size: 1.03em;
+}
+
+.fn-prose blockquote p {
+  margin: 0;
+}
+
+.fn-prose code {
+  font-family: var(--mono);
+  font-size: 0.83em;
+  background: var(--sunk);
+  padding: 0.1em 0.32em;
+  color: var(--ink);
+}
+
+.fn-prose hr {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 2.4em 0;
+}
+
+/* --- code blocks -------------------------------------------------------- */
+
+.fn-code {
+  margin: 1.6em 0;
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+  /* The figure must be allowed to be narrower than its content; the <pre>
+     inside it is what scrolls. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fn-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--sunk);
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+
+.fn-code pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--ink-2);
+  tab-size: 2;
+}
+
+.fn-code pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ========================================================================
+   CONTROLS
+   ======================================================================== */
+
+.fn-btn {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  letter-spacing: 0.02em;
+  padding: 8px 14px;
+  border: 1px solid var(--rule-hard);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.fn-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.fn-btn[data-variant="primary"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.fn-btn[data-variant="primary"]:hover {
+  background: var(--mark);
+  border-color: var(--mark);
+  color: var(--paper);
+}
+
+.fn-btn[data-variant="quiet"] {
+  border-color: var(--rule);
+  color: var(--ink-3);
+}
+
+.fn-btn[data-variant="quiet"]:hover {
+  background: none;
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+
+.fn-btn[data-variant="danger"] {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.fn-btn[data-variant="danger"]:hover {
+  background: var(--danger);
+  color: var(--paper);
+}
+
+.fn-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fn-btn:disabled:hover {
+  background: none;
+  color: var(--ink);
+}
+
+.fn-field {
+  font-family: var(--mono);
+  font-size: var(--m-lg);
+  width: 100%;
+  padding: 9px 11px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  transition: border-color 0.14s ease;
+}
+
+.fn-field::placeholder {
+  color: var(--ink-3);
+}
+
+.fn-field:focus {
+  border-color: var(--mark);
+  outline: none;
+}
+
+.fn-field[data-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.fn-field-serif {
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.3;
+}
+
+.fn-error {
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--danger);
+  margin-top: 5px;
+  display: block;
+}
+
+/* ========================================================================
+   OVERLAYS
+   ======================================================================== */
+
+.fn-scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--sunk) 78%, transparent);
+  z-index: 90;
+  animation: fn-fade 0.12s ease;
+}
+
+.fn-dialog {
+  position: fixed;
+  z-index: 91;
+  background: var(--paper);
+  border: 1px solid var(--rule-hard);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+@keyframes fn-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.fn-dialog {
+  animation: fn-rise 0.16s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* ========================================================================
+   TABLES — data reads as data
+   ======================================================================== */
+
+.fn-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+}
+
+.fn-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+.fn-table th,
+.fn-table td {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  text-align: left;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.fn-table th {
+  font-size: var(--m-xs);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--rule);
+  font-weight: 500;
+}
+
+.fn-table td:first-child {
+  color: var(--ink);
+}
+
+.fn-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fn-table tbody tr:hover td {
+  background: var(--sheet);
+}
+
+.fn-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================
+   RESPONSIVE — the gutter collapses into the row, it does not disappear
+   ======================================================================== */
+
+@media (max-width: 900px) {
+  .fn {
+    --gutter: 112px;
+    --t-body: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .fn {
+    --t-body: 18px;
+  }
+
+  .fn-page {
+    padding: 0 18px;
+  }
+
+  .fn-spine-inner {
+    padding: 0 18px;
+  }
+
+  /* On a phone the mono gutter moves above the title as a single ruled line. */
+  .fn-row {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 16px 0;
+  }
+
+  .fn-row-gutter {
+    flex-direction: row;
+    gap: 12px;
+    font-size: var(--m-xs);
+  }
+
+  .fn-row-title {
+    font-size: 20px;
+  }
+
+  .fn-row-aside {
+    font-size: var(--m-xs);
+  }
+
+  .fn-row::before {
+    left: -10px;
+  }
+
+  .fn-prose h2 .fn-anchor,
+  .fn-prose h3 .fn-anchor {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fn *,
+  .fn *::before,
+  .fn *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================================================
+   SHELL EXTRAS
+   ======================================================================== */
+
+.fn-skip {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  padding: 9px 14px;
+  transition: top 0.14s ease;
+}
+
+.fn-skip:focus {
+  top: 8px;
+}
+
+.fn-mobile-nav {
+  display: none;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.fn-mobile-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink-2);
+  font-size: var(--m-lg);
+  min-height: 48px;
+}
+
+.fn-mobile-nav a[data-current="true"] {
+  color: var(--ink);
+  border-left: 2px solid var(--rule-hard);
+}
+
+.fn-menu-btn {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .fn-nav-wide {
+    display: none;
+  }
+  .fn-menu-btn {
+    display: flex;
+  }
+  .fn-mobile-nav {
+    display: block;
+  }
+  .fn-kbd-wide {
+    display: none;
+  }
+}
+
+/* --- footer ------------------------------------------------------------- */
+
+.fn-foot {
+  border-top: 1px solid var(--rule-hard);
+  margin-top: 96px;
+  padding: 40px 0 64px;
+}
+
+.fn-foot-inner {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.fn-foot-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 8px;
+  font-size: var(--m-base);
+}
+
+.fn-foot-links a {
+  color: var(--ink-2);
+  transition: color 0.14s ease;
+  width: fit-content;
+  /* Standalone links, not inline in a sentence, so WCAG 2.5.8's inline
+     exception does not apply. 24px minimum. */
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.fn-foot-links a:hover {
+  color: var(--mark);
+}
+
+.fn-foot-note {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  text-align: right;
+  line-height: 1.7;
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .fn-foot-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+  }
+  .fn-foot-note {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+/* ========================================================================
+   COMMAND BAR
+   ======================================================================== */
+
+.fn-cmd {
+  top: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+}
+
+.fn-cmd-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.fn-cmd-input input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 15px 0;
+  font-size: var(--m-lg);
+  color: var(--ink);
+}
+
+.fn-cmd-input input::placeholder {
+  color: var(--ink-3);
+}
+
+.fn-cmd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.fn-cmd-list button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule-soft);
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.fn-cmd-list button[data-active="true"] {
+  background: var(--mark-wash);
+}
+
+.fn-cmd-kind {
+  color: var(--ink-3);
+}
+
+.fn-cmd-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.fn-cmd-sub {
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.fn-cmd-empty {
+  padding: 26px 14px;
+  margin: 0;
+  font-size: var(--m-base);
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.fn-cmd-foot {
+  display: flex;
+  gap: 16px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--rule);
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+}
+
+@media (max-width: 680px) {
+  .fn-cmd-list button {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
+
+/* ========================================================================
+   HOMEPAGE
+   ======================================================================== */
+
+.fn-open {
+  padding: 76px 28px 64px;
+  border-bottom: 1px solid var(--rule-hard);
+}
+
+.fn-open-eyebrow {
+  margin: 0 0 26px;
+}
+
+.fn-open-title {
+  max-width: 20ch;
+  margin: 0 0 34px;
+}
+
+.fn-open-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+  gap: 52px;
+  align-items: start;
+}
+
+.fn-proof {
+  margin: 0;
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-proof > div {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 14px;
+}
+
+.fn-proof dt {
+  align-self: center;
+}
+
+.fn-proof dd {
+  margin: 0;
+  grid-row: 1;
+  grid-column: 2;
+  font-size: 21px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.fn-proof p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-3);
+  line-height: 1.45;
+}
+
+.fn-open-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin-top: 40px;
+}
+
+@media (max-width: 860px) {
+  .fn-open {
+    padding: 52px 18px 44px;
+  }
+  .fn-open-body {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .fn-open-title {
+    max-width: none;
+  }
+}
+
+/* ========================================================================
+   BLOCKS
+   ======================================================================== */
+
+.fn-block {
+  padding-top: 56px;
+}
+
+.fn-block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.fn-block-head h2 {
+  margin: 0;
+}
+
+.fn-more {
+  font-size: var(--m-base);
+  color: var(--ink-3);
+  transition: color 0.14s ease;
+}
+
+.fn-more:hover {
+  color: var(--mark);
+}
+
+/* ========================================================================
+   INDEX PAGES
+   ======================================================================== */
+
+.fn-index-head {
+  padding: 64px 28px 34px;
+}
+
+.fn-index-head .fn-title {
+  margin-bottom: 14px;
+}
+
+.fn-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.fn-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+/* Filters are text with a rule under the active one. Not pills. */
+.fn-filter {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-3);
+  padding: 5px 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: color 0.14s ease;
+  min-height: 32px;
+}
+
+.fn-filter:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.fn-filter[data-on="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--rule-hard);
+}
+
+.fn-filter:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+
+.fn-filter-n {
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.fn-filter-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.fn-filter-input {
+  width: 190px;
+  font-size: var(--m-base);
+  padding: 6px 9px;
+}
+
+.fn-result-count {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  margin: 0 0 6px;
+}
+
+.fn-empty {
+  border-top: 1px solid var(--rule-hard);
+  padding: 56px 0 72px;
+}
+
+.fn-empty-title {
+  font-family: var(--serif);
+  font-size: 23px;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.fn-empty-body {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.fn-inline-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--mark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 680px) {
+  .fn-index-head {
+    padding: 40px 18px 26px;
+  }
+  .fn-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .fn-filter-tools {
+    justify-content: space-between;
+  }
+  .fn-filter-input {
+    flex: 1;
+  }
+}
+
+/* ========================================================================
+   ARTICLE
+   ======================================================================== */
+
+.fn-article {
+  padding-top: 40px;
+  /* measure + gap + rail. Centred as one block so the reading column is not
+     pinned to the left of a 1180px page with 260px of nothing beside it. */
+  max-width: calc(37rem + 64px + 210px + 56px);
+}
+
+.fn-back {
+  font-size: var(--m-base);
+  color: var(--ink-3);
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 30px;
+  transition: color 0.14s ease;
+}
+
+.fn-back:hover {
+  color: var(--mark);
+}
+
+.fn-article-head {
+  max-width: 46rem;
+}
+
+.fn-article-title {
+  max-width: 21ch;
+  margin-bottom: 20px;
+}
+
+.fn-article-dek {
+  max-width: 34rem;
+  margin: 0 0 22px;
+}
+
+/* The metadata line: one row of mono, under the headline, not six pills above it. */
+.fn-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  margin: 0;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--rule-hard);
+  max-width: 100%;
+}
+
+.fn-article-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  min-width: 0;
+  gap: 64px;
+  align-items: start;
+  padding-top: 34px;
+}
+
+/* --- the rail ----------------------------------------------------------- */
+
+/*
+ * Fixed to the viewport, not sticky inside a short parent — which is the exact
+ * bug that made the production TOC vanish 290px into a 5,900px article.
+ */
+.fn-rail {
+  position: sticky;
+  top: 92px;
+  align-self: start;
+  max-height: calc(100vh - 130px);
+  display: flex;
+}
+
+.fn-rail-inner {
+  display: grid;
+  grid-template-columns: 1fr 2px;
+  gap: 16px;
+  min-height: 0;
+  width: 100%;
+}
+
+.fn-rail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 12px;
+  grid-column: 1;
+}
+
+.fn-rail-left {
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.fn-rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  grid-column: 1;
+  grid-row: 2;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.fn-rail-list a {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  padding: 6px 0;
+  min-height: 24px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-3);
+  transition: color 0.14s ease;
+}
+
+.fn-rail-list a:hover {
+  color: var(--ink);
+}
+
+.fn-rail-list a[data-active="true"] {
+  color: var(--ink);
+}
+
+.fn-rail-n {
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  padding-top: 2px;
+}
+
+.fn-rail-list a[data-active="true"] .fn-rail-n {
+  color: var(--mark);
+}
+
+.fn-rail-t {
+  font-family: var(--serif);
+  font-size: 15px;
+}
+
+/* Progress replaces the separate gradient bar at the top of the window. */
+.fn-rail-progress {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  background: var(--rule);
+  position: relative;
+}
+
+.fn-rail-progress span {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: top;
+  transition: transform 0.08s linear;
+}
+
+@media (max-width: 1080px) {
+  .fn-article-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .fn-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .fn-article {
+    padding-top: 26px;
+  }
+  .fn-back {
+    margin-bottom: 22px;
+  }
+}
+
+.fn-figure {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--rule);
+  display: block;
+  margin: 1.8em 0;
+}
+
+/* ========================================================================
+   ESSAY END
+   ======================================================================== */
+
+.fn-end {
+  max-width: var(--measure);
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--rule-hard);
+  display: grid;
+  gap: 26px;
+}
+
+.fn-end-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  max-width: 420px;
+}
+
+.fn-end-form .fn-field {
+  flex: 1;
+}
+
+.fn-end-done {
+  font-size: var(--m-base);
+  color: var(--live);
+  margin: 10px 0 0;
+}
+
+.fn-end-note {
+  font-size: 15px;
+  color: var(--ink-3);
+  margin: 10px 0 0;
+  max-width: 48ch;
+  line-height: 1.5;
+}
+
+.fn-end-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ========================================================================
+   ADJACENT ESSAYS
+   ======================================================================== */
+
+.fn-adjacent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0;
+  margin-top: 72px;
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-adj {
+  padding: 20px 22px 22px 0;
+  border-right: 1px solid var(--rule);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  transition: background-color 0.14s ease;
+}
+
+.fn-adj:last-child {
+  border-right: none;
+}
+
+.fn-adj:hover {
+  background: var(--sheet);
+}
+
+.fn-adj-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.28;
+  color: var(--ink);
+  transition: color 0.14s ease;
+}
+
+.fn-adj:hover .fn-adj-title {
+  color: var(--mark);
+}
+
+@media (max-width: 680px) {
+  .fn-adjacent {
+    grid-template-columns: 1fr;
+  }
+  .fn-adj {
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 0;
+  }
+  .fn-adj:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ========================================================================
+   WORK
+   ======================================================================== */
+
+.fn-work {
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr auto;
+  gap: 0 26px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: start;
+}
+
+.fn-work-gutter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+}
+
+.fn-work-title {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+
+.fn-work-title a {
+  transition: color 0.14s ease;
+}
+
+.fn-work-title a:hover {
+  color: var(--mark);
+}
+
+.fn-work-summary {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 58ch;
+  line-height: 1.55;
+}
+
+.fn-work-outcomes {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  max-width: 58ch;
+}
+
+.fn-work-outcomes li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 15.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+
+.fn-work-outcomes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 9px;
+  height: 1px;
+  background: var(--ink-3);
+}
+
+.fn-work-stack {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  margin: 14px 0 0;
+  line-height: 1.7;
+  max-width: 58ch;
+}
+
+.fn-work-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--m-sm);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fn-work-links a {
+  color: var(--ink-3);
+  transition: color 0.14s ease;
+}
+
+.fn-work-links a:hover {
+  color: var(--mark);
+}
+
+@media (max-width: 780px) {
+  .fn-work {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .fn-work-gutter {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .fn-work-links {
+    flex-direction: row;
+    gap: 16px;
+    text-align: left;
+  }
+}
+
+/* --- work detail --------------------------------------------------------- */
+
+.fn-work-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 56px;
+  padding-top: 34px;
+  align-items: start;
+}
+
+.fn-spec {
+  border-top: 1px solid var(--rule-hard);
+  padding-top: 12px;
+}
+
+.fn-spec-list {
+  margin: 12px 0 0;
+}
+
+.fn-spec-list > div {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.fn-spec-list dt {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 2px;
+}
+
+.fn-spec-list dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-2);
+  line-height: 1.65;
+}
+
+.fn-spec-link {
+  display: block;
+  color: var(--mark);
+}
+
+.fn-outcomes {
+  margin-top: 56px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-outcome-list {
+  list-style: none;
+  counter-reset: fn-out;
+  padding: 0;
+  margin: 14px 0 0;
+  max-width: 60ch;
+}
+
+.fn-outcome-list li {
+  counter-increment: fn-out;
+  position: relative;
+  padding: 11px 0 11px 40px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.fn-outcome-list li::before {
+  content: counter(fn-out, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 14px;
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+}
+
+@media (max-width: 900px) {
+  .fn-work-detail {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+}
+
+/* ========================================================================
+   COLOPHON
+   ======================================================================== */
+
+.fn-colophon-bio {
+  max-width: 46rem;
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.fn-colophon-bio p:not(.fn-lede) {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  max-width: 62ch;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.fn-now {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule-hard);
+  padding-top: 14px;
+  margin-top: 12px;
+}
+
+.fn-now p {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  max-width: 58ch;
+  line-height: 1.55;
+}
+
+.fn-record-company {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+  margin: 0 0 8px;
+}
+
+.fn-record-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 62ch;
+}
+
+.fn-record-points li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 15.5px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.fn-record-points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 9px;
+  height: 1px;
+  background: var(--ink-3);
+}
+
+.fn-skills {
+  margin: 12px 0 0;
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-skills > div {
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr;
+  gap: 26px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.fn-skills dt {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+}
+
+.fn-skills dd {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.fn-colophon-tech {
+  border-top: 1px solid var(--rule-hard);
+  padding-top: 14px;
+  margin-top: 12px;
+}
+
+.fn-contact {
+  padding-bottom: 40px;
+}
+
+.fn-contact-title {
+  max-width: 24ch;
+  margin-top: 14px;
+}
+
+@media (max-width: 780px) {
+  .fn-skills > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

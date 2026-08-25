@@ -1,0 +1,706 @@
+/*
+ * THE DESK — admin surface of the Field Notebook system.
+ *
+ * Same tokens, same two families, same zero-radius rules as the public site.
+ * A publishing tool built for one site should look like that site's back room,
+ * not like a generic SaaS dashboard bolted onto it.
+ */
+
+.fn-desk {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.fn-desk-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule-hard);
+}
+
+.fn-desk-bar-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.fn-desk-bar .fn-wordmark {
+  margin-right: auto;
+}
+
+.fn-desk-exit {
+  color: var(--ink-3);
+}
+
+.fn-desk-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 28px 96px;
+  width: 100%;
+}
+
+.fn-desk-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding-bottom: 26px;
+}
+
+.fn-desk-stats {
+  display: flex;
+  gap: 48px;
+}
+
+.fn-desk-stats p {
+  margin: 0;
+}
+
+/* Two numbers that mean different things. Not five tiles, three of which
+   divide into each other. */
+.fn-stat {
+  font-size: 34px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin-top: 5px;
+}
+
+.fn-desk-filters {
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+/* ---- the desk ledger ---------------------------------------------------- */
+
+.fn-deskledger {
+  border-top: 1px solid var(--rule-hard);
+}
+
+.fn-deskrow {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 92px 92px 40px;
+  gap: 20px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+  transition: background-color 0.12s ease;
+}
+
+.fn-deskrow:not(.fn-deskrow-head):hover {
+  background: var(--sheet);
+}
+
+.fn-deskrow-head {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 7px 0;
+}
+
+.fn-deskrow-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  transition: color 0.12s ease;
+}
+
+.fn-deskrow-title:hover {
+  color: var(--mark);
+}
+
+.fn-deskrow-sub {
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.fn-deskrow-n {
+  font-size: var(--m-base);
+  color: var(--ink-2);
+}
+
+/* ---- row menu ----------------------------------------------------------- */
+
+.fn-rowmenu {
+  position: relative;
+  justify-self: end;
+}
+
+.fn-rowmenu-btn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.fn-rowmenu-btn:hover,
+.fn-rowmenu-btn[aria-expanded="true"] {
+  border-color: var(--rule);
+  color: var(--ink);
+}
+
+.fn-rowmenu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: 200px;
+  background: var(--paper);
+  border: 1px solid var(--rule-hard);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  animation: fn-rise 0.12s ease;
+}
+
+.fn-rowmenu-list button {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 9px 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.fn-rowmenu-list button:last-child {
+  border-bottom: none;
+}
+
+.fn-rowmenu-list button:hover {
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+.fn-rowmenu-list button[data-tone="danger"] {
+  color: var(--danger);
+}
+
+.fn-rowmenu-list button[data-tone="danger"]:hover {
+  background: var(--danger-wash);
+}
+
+@media (max-width: 900px) {
+  .fn-deskrow {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: 6px 12px;
+    padding: 15px 0;
+  }
+  .fn-deskrow-head {
+    display: none;
+  }
+  .fn-deskrow > .fn-state {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .fn-deskrow-main {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .fn-deskrow-n {
+    grid-column: 1;
+    text-align: left;
+    font-size: var(--m-xs);
+    color: var(--ink-3);
+  }
+
+  .fn-deskrow-n[data-label]::before {
+    content: attr(data-label) " ";
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .fn-rowmenu {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: start;
+  }
+}
+
+/* ========================================================================
+   EDITOR
+   ======================================================================== */
+
+.fn-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.fn-editor-bar {
+  border-bottom: 1px solid var(--rule);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 54px;
+  background: var(--paper);
+  z-index: 30;
+}
+
+.fn-editor-state {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.fn-editor-state .fn-back {
+  margin: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* The save state is always on screen. In production it is invisible right up
+   until the moment the work is already gone. */
+.fn-save {
+  font-size: var(--m-sm);
+  color: var(--ink-3);
+}
+
+.fn-save[data-state="saving"] {
+  color: var(--draft);
+}
+
+.fn-save[data-state="saved"] {
+  color: var(--live);
+}
+
+.fn-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fn-segment {
+  display: flex;
+  border: 1px solid var(--rule);
+}
+
+.fn-segment button {
+  font-family: var(--mono);
+  font-size: var(--m-base);
+  background: none;
+  border: none;
+  padding: 7px 13px;
+  color: var(--ink-3);
+  cursor: pointer;
+  min-height: 34px;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.fn-segment button[data-on="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.fn-editor-sheet {
+  flex: 1;
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 40px 28px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The title is set in the face and size the published page uses, so what you
+   type reads like what a reader will get. */
+.fn-editor-title {
+  font-family: var(--serif);
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 500;
+  letter-spacing: -0.026em;
+  line-height: 1.1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  width: 100%;
+  padding: 0;
+}
+
+.fn-editor-title::placeholder {
+  color: var(--ink-3);
+  opacity: 0.5;
+}
+
+.fn-editor-dek {
+  font-family: var(--serif);
+  font-size: var(--t-lede);
+  line-height: 1.4;
+  color: var(--ink-2);
+  background: none;
+  border: none;
+  outline: none;
+  resize: none;
+  width: 100%;
+  padding: 0;
+}
+
+.fn-editor-dek::placeholder {
+  color: var(--ink-3);
+  opacity: 0.55;
+}
+
+.fn-editor-body {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--rule);
+  outline: none;
+  resize: none;
+  width: 100%;
+  min-height: 52vh;
+  padding: 20px 0 0;
+  tab-size: 2;
+}
+
+.fn-editor-body::placeholder {
+  color: var(--ink-3);
+  opacity: 0.55;
+}
+
+.fn-editor-read-title {
+  margin-bottom: 16px;
+}
+
+.fn-preview-empty {
+  color: var(--ink-3);
+  font-size: var(--t-small);
+}
+
+/* ---- metadata drawer ---------------------------------------------------- */
+
+.fn-editor-meta {
+  position: sticky;
+  bottom: 0;
+  background: var(--paper);
+  border-top: 1px solid var(--rule-hard);
+  z-index: 20;
+}
+
+.fn-meta-toggle {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-3);
+  text-align: left;
+}
+
+.fn-meta-toggle:hover {
+  color: var(--ink);
+}
+
+.fn-meta-summary {
+  font-size: var(--m-sm);
+  margin-right: auto;
+}
+
+.fn-meta-fields {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 4px 28px 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 22px;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.fn-meta-fields label,
+.fn-meta-danger {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.fn-field-note {
+  font-size: var(--m-xs);
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* ========================================================================
+   DIALOGS
+   ======================================================================== */
+
+.fn-confirm {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100vw - 32px));
+  padding: 26px 28px 22px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.fn-confirm-title {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.fn-confirm-body {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+.fn-confirm-body p {
+  margin: 0 0 14px;
+}
+
+.fn-confirm-spec {
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.fn-confirm-spec > div {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 14px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.fn-confirm-spec dt {
+  font-family: var(--mono);
+  font-size: var(--m-xs);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 2px;
+}
+
+.fn-confirm-spec dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--m-sm);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.fn-confirm-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.fn-confirm-gate b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.fn-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* ========================================================================
+   TOASTS — replacing alert()
+   ======================================================================== */
+
+.fn-toasts {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(460px, calc(100vw - 40px));
+}
+
+.fn-toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 11px 12px 11px 15px;
+  border-left: 3px solid var(--live);
+  animation: fn-rise 0.16s cubic-bezier(0.2, 0.8, 0.3, 1);
+  font-family: var(--mono);
+  font-size: var(--m-base);
+}
+
+.fn-toast[data-tone="warn"] {
+  border-left-color: var(--draft);
+}
+
+.fn-toast[data-tone="bad"] {
+  border-left-color: var(--danger);
+}
+
+.fn-toast-msg {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.fn-toast-undo {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  font: inherit;
+  padding: 4px 9px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.fn-toast-undo:hover {
+  opacity: 1;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.fn-toast-x {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0.6;
+  padding: 0 3px;
+}
+
+.fn-toast-x:hover {
+  opacity: 1;
+}
+
+/* ========================================================================
+   SETTINGS
+   ======================================================================== */
+
+.fn-settings-title {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.024em;
+  margin: 0;
+}
+
+.fn-settings-sub {
+  font-size: var(--t-small);
+  color: var(--ink-3);
+  margin: 5px 0 0;
+}
+
+.fn-settings-group {
+  border-top: 1px solid var(--rule-hard);
+  padding: 20px 0 32px;
+}
+
+.fn-settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.fn-settings-note {
+  font-size: 15px;
+  color: var(--ink-3);
+  margin: 6px 0 0;
+  max-width: 56ch;
+  line-height: 1.5;
+}
+
+.fn-settings-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px 32px;
+}
+
+.fn-settings-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 680px) {
+  .fn-editor-bar {
+    padding: 10px 18px;
+  }
+  .fn-editor-sheet {
+    padding: 26px 18px 100px;
+  }
+  .fn-meta-toggle,
+  .fn-meta-fields {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .fn-meta-summary {
+    display: none;
+  }
+  .fn-desk-page {
+    padding: 24px 18px 80px;
+  }
+  .fn-desk-bar-inner {
+    padding: 0 18px;
+    gap: 18px;
+  }
+  .fn-desk-stats {
+    gap: 30px;
+  }
+  .fn-stat {
+    font-size: 27px;
+  }
+}

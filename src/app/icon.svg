@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0f172a"/><polyline points="5,25 5,7 16,21 27,7 27,25" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="23" y="23" width="5" height="3.5" rx="1" fill="#14b8a6"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    The favicon is the hero plate at 32px: a request crossing four gates, with
+    the third one stopping it. Anything more detailed disappears at this size,
+    and a letterform "M" would say nothing the wordmark does not already say.
+  -->
+  <rect width="32" height="32" fill="#000000"/>
+  <!-- the rail -->
+  <rect x="3" y="15.5" width="26" height="1" fill="#3d4448"/>
+  <!-- gates -->
+  <rect x="9"  y="7" width="1" height="18" fill="#8d979e"/>
+  <rect x="15" y="7" width="1" height="18" fill="#8d979e"/>
+  <rect x="21" y="7" width="1" height="18" fill="#ffffff"/>
+  <!-- the packet, in flight -->
+  <rect x="4" y="14" width="4" height="4" fill="#3fd7e8"/>
+  <!-- and the one that was stopped at the third gate -->
+  <path d="M19 14l4 4M23 14l-4 4" stroke="#f0655f" stroke-width="1.4" fill="none"/>
+</svg>
