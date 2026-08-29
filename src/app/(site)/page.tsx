@@ -3,7 +3,7 @@ import { getProtoSnapshot } from "@/lib/proto-data";
 import { getTestimonials } from "@/lib/testimonials";
 import { Reveal, Counter, Marquee } from "@/components/site/chrome";
 import { jsonLd, personSchema, websiteSchema } from "@/lib/structured-data";
-import { Trace } from "@/components/site/assets/heroes";
+import { Workday } from "@/components/site/assets/day";
 import { Mechanism } from "@/components/site/assets/mechanism";
 
 export const revalidate = 60;
@@ -79,16 +79,15 @@ export default async function SignalHome() {
           </div>
 
           {/*
-            The hero plate. A request moving through gates — input screening,
-            retrieval, tool authorization, output filtering — where roughly one
-            in five is blocked and dies where it was caught. It is the argument
-            of "Your output filter is not a guardrail" as a moving picture,
-            which is why it is here instead of a photograph: nobody else can
-            have it, because nobody else wrote that essay.
+            The hero plate. One 96-second day at my actual workstation —
+            morning coffee, the workday, a call, the 6 PM switch to the PS5,
+            a late-night fix, shutdown, and dawn again — drawn entirely in
+            code. It is here instead of a photograph because the desk, the
+            routine, and the character are mine: nobody else can have it.
           */}
           <Reveal delay={120}>
             <div className="sg-plate">
-              <Trace />
+              <Workday />
             </div>
           </Reveal>
         </section>
