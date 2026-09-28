@@ -17,6 +17,22 @@ interface Props {
 }
 
 /**
+ * The social card URL, with spaces as %20.
+ *
+ * URLSearchParams writes spaces as "+", which is valid form encoding but not
+ * what LinkedIn's scraper expects: it re-encodes each "+" as a literal plus, so
+ * the card rendered YOUR+LOGIN+SCREEN+IS+NOT+... as one unbreakable word that
+ * ran off the plate. encodeURIComponent survives every scraper we post to.
+ */
+function ogUrl(params: Record<string, string>) {
+  const query = Object.entries(params)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join("&");
+  return `${SITE.url}/og?${query}`;
+}
+
+/**
  * Pre-render every published essay at build time; anything new renders on
  * first request and is cached from then on. Without this the route falls back
  * to on-demand rendering for every visitor, which is a database round trip per
@@ -37,11 +53,12 @@ export async function generateMetadata({ params }: Props) {
   const e = essays.find((x) => x.slug === slug);
   if (!e) return {};
 
-  const og = new URL("/og", SITE.url);
-  og.searchParams.set("title", e.title);
-  og.searchParams.set("date", e.date);
-  og.searchParams.set("readingTime", `${e.minutes} min read`);
-  og.searchParams.set("category", e.category);
+  const og = ogUrl({
+    title: e.title,
+    date: e.date,
+    readingTime: `${e.minutes} min read`,
+    category: e.category,
+  });
 
   return {
     title: e.title,
@@ -52,7 +69,7 @@ export async function generateMetadata({ params }: Props) {
       title: e.title,
       description: e.dek,
       url: `${SITE.url}/blog/${slug}`,
-      images: [{ url: og.toString(), width: 1200, height: 630 }],
+      images: [{ url: og, width: 1200, height: 630 }],
       publishedTime: e.date,
       authors: [SITE.author.name],
       tags: e.tags,
@@ -61,7 +78,7 @@ export async function generateMetadata({ params }: Props) {
       card: "summary_large_image",
       title: e.title,
       description: e.dek,
-      images: [og.toString()],
+      images: [og],
     },
   };
 }
@@ -99,16 +116,14 @@ export default async function Essay({ params }: Props) {
   const older = essays[i + 1] ?? null;
 
   const post = await getPostBySlug(slug).catch(() => null);
-  const og = new URL("/og", SITE.url);
-  og.searchParams.set("title", essay.title);
-  og.searchParams.set("category", essay.category);
+  const og = ogUrl({ title: essay.title, category: essay.category });
 
   return (
     <>
       {post && (
         <script
           {...jsonLd(
-            articleSchema(post, og.toString()),
+            articleSchema(post, og),
             breadcrumbSchema([
               { name: "Essays", path: "/blog" },
               { name: essay.title, path: `/blog/${slug}` },
