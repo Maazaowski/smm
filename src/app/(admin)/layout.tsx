@@ -1,26 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import "../(site)/signal.css";
+import "./admin.css";
 
 /**
  * The admin shell.
  *
- * Deliberately separate from (site). The admin is still on the old Tailwind
- * styling and does not need — or want — the public site's display faces,
- * blueprint ground, header, footer or scroll machinery. Before the route-group
- * split it inherited all of that, which is why the login screen used to render
- * a newsletter signup form and a Guestbook link underneath the password box.
+ * Same design system as the public site — signal.css supplies the tokens, the
+ * faces and the primitives, admin.css adds the back-office shapes on top — but
+ * deliberately not the same chrome. No marketing header, no footer, no scroll
+ * machinery, no reveal-on-scroll: an admin page is read top to bottom by one
+ * person who already knows what is on it.
  *
- * Restyling the admin into Signal is separate work.
+ * The Fontshare link is duplicated from (site)/layout.tsx rather than lifted
+ * to the root because the root layout is shared with the OG route and the
+ * feeds, which must not pay for two display faces.
  */
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Admin",
+  title: "Desk",
   robots: { index: false, follow: false },
 };
 
@@ -30,8 +27,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${inter.variable} dark min-h-screen bg-bg text-primary`}>
-      {children}
+    <div className="sg sg-admin">
+      <link rel="preconnect" href="https://api.fontshare.com" />
+      <link
+        rel="stylesheet"
+        href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap"
+      />
+      <div className="sg-grid" aria-hidden="true" />
+      <div className="sg-body">{children}</div>
     </div>
   );
 }

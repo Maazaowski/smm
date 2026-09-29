@@ -16,6 +16,7 @@ export function AboutEditor() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
 
   useEffect(() => {
     async function loadAbout() {
@@ -48,12 +49,13 @@ export function AboutEditor() {
       if (res.ok) {
         const data = await res.json();
         setUpdatedAt(data.updatedAt);
+        setNotice({ tone: "ok", text: "Saved. /about is live with these words." });
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(`Failed to save: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Save failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Save failed: ${String(err)}` });
     } finally {
       setSaving(false);
     }
@@ -231,9 +233,9 @@ export function AboutEditor() {
 
   if (loading) {
     return (
-      <div className="space-y-3">
+      <div className="ad-rows" aria-hidden="true">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-xl animate-shimmer" />
+          <div key={i} className="ad-skeleton" />
         ))}
       </div>
     );
@@ -241,36 +243,40 @@ export function AboutEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="ad-bar">
         <div>
-          <p className="text-sm text-secondary">
-            Edit your About page content. Changes appear on the public site after
-            save.
+          <h1 className="ad-title">About, in my words</h1>
+          <p>
+            Everything on /about except the layout. Saving publishes it
+            {updatedAt ? ` — last saved ${new Date(updatedAt).toLocaleString()}.` : "."}
           </p>
-          {updatedAt && (
-            <p className="text-xs text-muted mt-1">
-              Last saved: {new Date(updatedAt).toLocaleString()}
-            </p>
-          )}
         </div>
-        <div className="flex items-center gap-3">
-          <a
-            href="/about"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl border border-glass-border bg-glass-bg px-4 py-2 text-sm text-secondary hover:text-primary transition-all"
-          >
-            View page
+        <div className="ad-actions">
+          <a href="/about" target="_blank" rel="noopener noreferrer" className="ad-link">
+            View page ↗
           </a>
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-xl bg-accent-blue px-6 py-2 text-sm font-medium text-white hover:bg-accent-purple transition-colors disabled:opacity-50"
+            className="sg-cta"
+            data-fill="true"
           >
-            {saving ? "Saving..." : "Save About Page"}
+            {saving ? "Saving…" : "Save about page"}
           </button>
         </div>
       </div>
+
+      {notice && (
+        <div className="ad-notice" data-tone={notice.tone} role="status">
+          <span>{notice.text}</span>
+          <span className="ad-notice-actions">
+            <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+              Dismiss
+            </button>
+          </span>
+        </div>
+      )}
 
       <Section title="Bio">
         {content.bio.map((paragraph, i) => (
@@ -286,7 +292,8 @@ export function AboutEditor() {
               type="button"
               onClick={() => removeBio(i)}
               disabled={content.bio.length <= 1}
-              className="text-xs text-error hover:text-error/80 px-2 disabled:opacity-30"
+              className="ad-link"
+              data-tone="danger"
             >
               Remove
             </button>
@@ -295,7 +302,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addBio}
-          className="text-xs text-accent-blue hover:text-accent-purple"
+          className="ad-link"
         >
           + Add paragraph
         </button>
@@ -312,7 +319,7 @@ export function AboutEditor() {
                 availability: { ...prev.availability, label: e.target.value },
               }))
             }
-            className={`${inputClass} mt-1`}
+            className={inputClass}
           />
         </div>
         <div>
@@ -326,13 +333,13 @@ export function AboutEditor() {
               }))
             }
             rows={4}
-            className={`${textareaClass} mt-1`}
+            className={textareaClass}
           />
         </div>
       </Section>
 
       <Section title="Education">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="ad-grid-2">
           <div>
             <label className={labelClass}>Degree</label>
             <input
@@ -343,7 +350,7 @@ export function AboutEditor() {
                   education: { ...prev.education, degree: e.target.value },
                 }))
               }
-              className={`${inputClass} mt-1`}
+              className={inputClass}
             />
           </div>
           <div>
@@ -356,7 +363,7 @@ export function AboutEditor() {
                   education: { ...prev.education, institution: e.target.value },
                 }))
               }
-              className={`${inputClass} mt-1`}
+              className={inputClass}
             />
           </div>
           <div>
@@ -369,7 +376,7 @@ export function AboutEditor() {
                   education: { ...prev.education, location: e.target.value },
                 }))
               }
-              className={`${inputClass} mt-1`}
+              className={inputClass}
             />
           </div>
           <div>
@@ -382,7 +389,7 @@ export function AboutEditor() {
                   education: { ...prev.education, period: e.target.value },
                 }))
               }
-              className={`${inputClass} mt-1`}
+              className={inputClass}
             />
           </div>
           <div className="sm:col-span-2">
@@ -398,7 +405,7 @@ export function AboutEditor() {
                   },
                 }))
               }
-              className={`${inputClass} mt-1`}
+              className={inputClass}
             />
           </div>
         </div>
@@ -408,11 +415,11 @@ export function AboutEditor() {
         {content.certificates.map((cert, i) => (
           <div
             key={i}
-            className="rounded-xl border border-glass-border bg-surface-1 p-4 space-y-3"
+            className="ad-sub space-y-3"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Certificate {i + 1}</span>
-              <div className="flex items-center gap-2">
+            <div className="ad-sub-head">
+              <span className="sg-micro">Certificate {i + 1}</span>
+              <div className="flex items-center">
                 <button
                   type="button"
                   onClick={() =>
@@ -422,7 +429,7 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === 0}
-                  className="text-xs text-secondary hover:text-primary disabled:opacity-30"
+                  className="ad-link"
                 >
                   Up
                 </button>
@@ -435,14 +442,15 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === content.certificates.length - 1}
-                  className="text-xs text-secondary hover:text-primary disabled:opacity-30"
+                  className="ad-link"
                 >
                   Down
                 </button>
                 <button
                   type="button"
                   onClick={() => removeCertificate(i)}
-                  className="text-xs text-error hover:text-error/80"
+                  className="ad-link"
+                  data-tone="danger"
                 >
                   Remove
                 </button>
@@ -477,7 +485,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addCertificate}
-          className="text-xs text-accent-blue hover:text-accent-purple"
+          className="ad-link"
         >
           + Add certificate
         </button>
@@ -487,11 +495,11 @@ export function AboutEditor() {
         {content.timeline.map((entry, i) => (
           <div
             key={i}
-            className="rounded-xl border border-glass-border bg-surface-1 p-4 space-y-3"
+            className="ad-sub space-y-3"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">Role {i + 1}</span>
-              <div className="flex items-center gap-2">
+            <div className="ad-sub-head">
+              <span className="sg-micro">Role {i + 1}</span>
+              <div className="flex items-center">
                 <button
                   type="button"
                   onClick={() =>
@@ -501,7 +509,7 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === 0}
-                  className="text-xs text-secondary hover:text-primary disabled:opacity-30"
+                  className="ad-link"
                 >
                   Up
                 </button>
@@ -514,20 +522,21 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === content.timeline.length - 1}
-                  className="text-xs text-secondary hover:text-primary disabled:opacity-30"
+                  className="ad-link"
                 >
                   Down
                 </button>
                 <button
                   type="button"
                   onClick={() => removeTimeline(i)}
-                  className="text-xs text-error hover:text-error/80"
+                  className="ad-link"
+                  data-tone="danger"
                 >
                   Remove
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="ad-grid-2">
               <input
                 value={entry.role}
                 onChange={(e) => updateTimeline(i, "role", e.target.value)}
@@ -568,7 +577,8 @@ export function AboutEditor() {
                       type="button"
                       onClick={() => removeHighlight(i, j)}
                       disabled={entry.highlights.length <= 1}
-                      className="text-xs text-error hover:text-error/80 px-2 disabled:opacity-30"
+                      className="ad-link"
+              data-tone="danger"
                     >
                       Remove
                     </button>
@@ -577,7 +587,7 @@ export function AboutEditor() {
                 <button
                   type="button"
                   onClick={() => addHighlight(i)}
-                  className="text-xs text-accent-blue hover:text-accent-purple"
+                  className="ad-link"
                 >
                   + Add highlight
                 </button>
@@ -588,7 +598,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addTimeline}
-          className="text-xs text-accent-blue hover:text-accent-purple"
+          className="ad-link"
         >
           + Add experience
         </button>
@@ -598,9 +608,9 @@ export function AboutEditor() {
         {skillCategories.map(([category, items], i) => (
           <div
             key={`${category}-${i}`}
-            className="rounded-xl border border-glass-border bg-surface-1 p-4 space-y-3"
+            className="ad-sub space-y-3"
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="ad-sub-head">
               <input
                 value={category}
                 onChange={(e) => updateSkillCategory(i, e.target.value)}
@@ -610,7 +620,8 @@ export function AboutEditor() {
               <button
                 type="button"
                 onClick={() => removeSkillCategory(category)}
-                className="text-xs text-error hover:text-error/80 px-2 shrink-0"
+                className="ad-link"
+                data-tone="danger"
               >
                 Remove
               </button>
@@ -626,7 +637,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addSkillCategory}
-          className="text-xs text-accent-blue hover:text-accent-purple"
+          className="ad-link"
         >
           + Add category
         </button>

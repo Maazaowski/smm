@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Badge } from "@/components/ui/badge";
+import { Tag } from "@/components/admin/admin-shell";
 import {
   inputClass,
   textareaClass,
@@ -181,19 +180,20 @@ export function TestimonialsEditor() {
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl text-primary">
+        <div className="ad-bar">
+          <h1 className="ad-title">
             {editing.id ? "Edit reference" : "New reference"}
-          </h2>
-          <button
-            onClick={() => setEditing(null)}
-            className="text-sm text-secondary hover:text-primary"
-          >
-            &larr; Back
+          </h1>
+          <button type="button" onClick={() => setEditing(null)} className="ad-link">
+            ← Back
           </button>
         </div>
 
-        {error && <p className="text-error text-sm">{error}</p>}
+        {error && (
+          <div className="ad-notice" data-tone="bad" role="alert">
+            <span>{error}</span>
+          </div>
+        )}
 
         <label className="block space-y-1">
           <span className={labelClass}>Quote</span>
@@ -205,7 +205,7 @@ export function TestimonialsEditor() {
           />
         </label>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="ad-grid-3">
           <label className="block space-y-1">
             <span className={labelClass}>Name</span>
             <input
@@ -246,17 +246,16 @@ export function TestimonialsEditor() {
             }
             placeholder="https://linkedin.com/in/... — where this can be verified"
           />
-          <span className="text-xs text-muted">
+          <span className="ad-help">
             A reference nobody can check is worth less than no reference.
           </span>
         </label>
 
-        <label className="flex items-center gap-2 text-sm text-secondary">
+        <label className="ad-check">
           <input
             type="checkbox"
             checked={!editing.draft}
             onChange={(e) => setEditing({ ...editing, draft: !e.target.checked })}
-            className="rounded"
           />
           Publish to the site
         </label>
@@ -265,7 +264,8 @@ export function TestimonialsEditor() {
           onClick={save}
           disabled={saving || blockers.length > 0}
           title={blockers.length ? `Still needs ${blockers.join(", ")}` : undefined}
-          className="rounded-xl bg-accent-blue px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-purple disabled:opacity-50"
+          className="sg-cta"
+          data-fill="true"
         >
           {saving ? "Saving…" : editing.id ? "Update" : "Create"}
         </button>
@@ -277,78 +277,94 @@ export function TestimonialsEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-secondary">
-          {rows.length} reference{rows.length === 1 ? "" : "s"} ·{" "}
-          {rows.filter((r) => !r.draft).length} live
-        </p>
-        <button
-          onClick={() => setEditing({ ...EMPTY, sortOrder: rows.length })}
-          className="rounded-xl bg-accent-blue px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-purple"
-        >
-          New reference
-        </button>
+      <div className="ad-bar">
+        <div>
+          <h1 className="ad-title">What they said afterwards</h1>
+          <p>
+            {rows.length} reference{rows.length === 1 ? "" : "s"} ·{" "}
+            {rows.filter((r) => !r.draft).length} live. New entries are drafts
+            until you publish them.
+          </p>
+        </div>
+        <div className="ad-actions">
+          <button
+            type="button"
+            onClick={() => setEditing({ ...EMPTY, sortOrder: rows.length })}
+            className="sg-cta"
+            data-fill="true"
+          >
+            New reference
+          </button>
+        </div>
       </div>
 
-      {error && <p className="text-error text-sm">{error}</p>}
+      {error && (
+          <div className="ad-notice" data-tone="bad" role="alert">
+            <span>{error}</span>
+          </div>
+        )}
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="ad-rows" aria-hidden="true">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-24 animate-shimmer rounded-xl" />
+            <div key={i} className="ad-skeleton" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <GlassCard className="p-10 text-center" hover={false}>
-          <p className="text-secondary">
-            No references yet. Ask two former colleagues and one client for a
-            sentence about a specific outcome.
-          </p>
-        </GlassCard>
+        <div className="ad-empty">
+          No references yet. Ask two former colleagues and one client for a
+          sentence about a specific outcome.
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="ad-rows">
           {rows.map((t, i) => (
-            <GlassCard key={t.id} className="p-4" hover={false}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-primary">
+            <article
+              key={t.id}
+              className="ad-row"
+              style={{ gridTemplateColumns: "minmax(0, 1fr) auto" }}
+            >
+                <div className="min-w-0">
+                  <p className="ad-row-d" style={{ color: "var(--text)", fontSize: 14.5 }}>
                     &ldquo;{t.quote.slice(0, 140)}
                     {t.quote.length > 140 ? "…" : ""}&rdquo;
                   </p>
-                  <p className="mt-2 text-xs text-muted">
-                    {t.author} · {t.role}, {t.company}
-                    {t.sourceUrl ? " · source ✓" : " · no source"}
-                  </p>
+                  <div className="ad-row-meta">
+                    <span className="ad-row-r">
+                      {t.author} · {t.role}, {t.company}
+                    </span>
+                    {t.draft ? <Tag tone="draft">Draft</Tag> : <Tag tone="live">Live</Tag>}
+                    {t.sourceUrl ? <Tag>Source ✓</Tag> : <Tag tone="warn">No source</Tag>}
+                  </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {t.draft ? (
-                    <Badge variant="accent">Draft</Badge>
-                  ) : (
-                    <span className="px-2 py-1 text-xs text-success">Live</span>
-                  )}
+                <div className="ad-row-actions">
                   <button
+                    type="button"
                     onClick={() => reorder(i, -1)}
                     disabled={i === 0}
-                    className="px-1 text-xs text-muted hover:text-primary disabled:opacity-30"
+                    className="ad-link"
                     aria-label={`Move ${t.author} up`}
                   >
                     ↑
                   </button>
                   <button
+                    type="button"
                     onClick={() => reorder(i, 1)}
                     disabled={i === rows.length - 1}
-                    className="px-1 text-xs text-muted hover:text-primary disabled:opacity-30"
+                    className="ad-link"
                     aria-label={`Move ${t.author} down`}
                   >
                     ↓
                   </button>
                   <button
+                    type="button"
                     onClick={() => togglePublish(t)}
-                    className="px-2 py-1 text-xs text-accent-blue transition-colors hover:text-accent-purple"
+                    className="ad-link"
+                    data-tone={t.draft ? "live" : undefined}
                   >
                     {t.draft ? "Publish" : "Unpublish"}
                   </button>
                   <button
+                    type="button"
                     onClick={() =>
                       setEditing({
                         id: t.id,
@@ -361,19 +377,20 @@ export function TestimonialsEditor() {
                         sortOrder: t.sortOrder,
                       })
                     }
-                    className="px-2 py-1 text-xs text-secondary transition-colors hover:text-primary"
+                    className="ad-link"
                   >
                     Edit
                   </button>
                   <button
+                    type="button"
                     onClick={() => remove(t)}
-                    className="px-2 py-1 text-xs text-error transition-colors hover:text-error/80"
+                    className="ad-link"
+                    data-tone="danger"
                   >
                     Delete
                   </button>
                 </div>
-              </div>
-            </GlassCard>
+            </article>
           ))}
         </div>
       )}

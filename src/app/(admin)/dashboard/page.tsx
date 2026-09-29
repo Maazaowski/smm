@@ -1,21 +1,9 @@
 import { redirect } from "next/navigation";
-import { verifyAuth } from "@/lib/auth";
-import { DashboardContent } from "@/components/dashboard/dashboard-content";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-  robots: { index: false, follow: false },
-};
-
-export const dynamic = "force-dynamic";
-
-export default async function DashboardPage() {
-  const isAuthenticated = await verifyAuth();
-
-  if (!isAuthenticated) {
-    redirect("/admin");
-  }
-
-  return <DashboardContent />;
+/**
+ * /dashboard was the analytics half of the admin on its own page. It is now
+ * the Analytics section of /admin; this keeps the old bookmark working.
+ */
+export default function DashboardPage() {
+  redirect("/admin?tab=analytics");
 }

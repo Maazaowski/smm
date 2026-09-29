@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import { SITE } from "@/lib/constants";
+import { Reactions } from "@/components/site/reactions";
 
 /**
  * How an essay ends.
  *
- * One ask and two utilities. The old article footer stacked five modules here —
- * custom reactions permanently at zero, a share row, a newsletter card, a
- * Giscus embed that loaded its own second reaction bar and comment box, then a
- * three-card related grid. Four competing asks, all showing nothing.
+ * One ask and two utilities, with a reaction row above them. The old article
+ * footer stacked five modules here — reactions, a share row, a newsletter
+ * card, a Giscus embed that loaded its own second reaction bar and comment
+ * box, then a three-card related grid. Four competing asks, all showing
+ * nothing.
  *
  * Subscribing is the ask because it is the only one that compounds. Comments
  * are a link rather than an iframe: every thread currently has zero comments,
  * and the URLs deliberately did not change, so the threads stay attached if the
- * embed is ever wanted back.
+ * embed is ever wanted back. Reactions came back because they are the one
+ * signal a reader can give without an account, and the desk's analytics had
+ * been charting four columns of nothing without them.
  */
 export function EssayEnd({ title, slug }: { title: string; slug: string }) {
   const [email, setEmail] = useState("");
@@ -55,6 +59,8 @@ export function EssayEnd({ title, slug }: { title: string; slug: string }) {
 
   return (
     <section className="sg-end">
+      <Reactions slug={slug} />
+
       <div className="sg-slug">
         <span className="sg-slug-n">[·]</span>
         <span className="sg-slug-label">{"// End"}</span>

@@ -2,15 +2,28 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { AboutEditor } from "@/components/admin/about-editor";
 import { ProjectsEditor } from "@/components/admin/projects-editor";
 import { TestimonialsEditor } from "@/components/admin/testimonials-editor";
+import { AnalyticsTab, useAnalytics } from "@/components/admin/analytics";
+import {
+  AdminHead,
+  Notice,
+  SectionSlug,
+  Skeleton,
+  Tag,
+  type AdminTab,
+  type NoticeState,
+} from "@/components/admin/admin-shell";
+import {
+  inputClass,
+  labelClass,
+  selectClass,
+  textareaClass,
+} from "@/components/admin/editor-primitives";
 import { useDraftGuard, type DraftStatus } from "@/hooks/use-draft-guard";
-
-type AdminTab = "posts" | "projects" | "about" | "testimonials";
+import { CATEGORIES } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 
 interface PostEntry {
   slug: string;
@@ -21,25 +34,98 @@ interface PostEntry {
   notified: boolean;
 }
 
-export function AdminPanel() {
+/**
+ * The desk. One page, five sections, the section in the URL.
+ *
+ * Analytics is loaded once here and shared: the Essays list shows views per
+ * row from the same payload the Analytics section charts, so the two never
+ * disagree and switching between them does not refetch.
+ */
+export function AdminPanel({ tab }: { tab: AdminTab }) {
+  const router = useRouter();
+  const analytics = useAnalytics();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth", { method: "DELETE" });
+    router.refresh();
+  };
+
+  const viewsBySlug = new Map(
+    (analytics.data?.postStats ?? []).map((s) => [s.slug, s.views])
+  );
+
+  return (
+    <>
+      <AdminHead tab={tab} onLogout={handleLogout} />
+      <main className="sg-wrap ad-main">
+        {tab === "posts" && (
+          <PostsSection
+            views={viewsBySlug}
+            viewsReady={Boolean(analytics.data)}
+            onChanged={analytics.reload}
+          />
+        )}
+        {tab === "projects" && (
+          <>
+            <SectionSlug tab="projects" fact="synced from GitHub nightly" />
+            <ProjectsEditor />
+          </>
+        )}
+        {tab === "about" && (
+          <>
+            <SectionSlug tab="about" fact="renders at /about" />
+            <AboutEditor />
+          </>
+        )}
+        {tab === "testimonials" && (
+          <>
+            <SectionSlug tab="testimonials" fact="drafts until published" />
+            <TestimonialsEditor />
+          </>
+        )}
+        {tab === "analytics" && (
+          <AnalyticsTab
+            data={analytics.data}
+            error={analytics.error}
+            loading={analytics.loading}
+            onReload={analytics.reload}
+          />
+        )}
+      </main>
+    </>
+  );
+}
+
+/* ======================================================================
+   ESSAYS
+   ====================================================================== */
+
+function PostsSection({
+  views,
+  viewsReady,
+  onChanged,
+}: {
+  views: Map<string, number>;
+  viewsReady: boolean;
+  onChanged: () => void;
+}) {
   const [posts, setPosts] = useState<PostEntry[]>([]);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [sendingSlug, setSendingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<NoticeState | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editSlug, setEditSlug] = useState<string | null>(null);
-  const router = useRouter();
 
   // Editor state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("AI Engineering");
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [tags, setTags] = useState("");
   const [isDraft, setIsDraft] = useState(false);
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<AdminTab>("posts");
 
   // Everything the editor holds. Serialized for the draft guard so an
   // accidental refresh or a stray "Back" no longer destroys unsaved writing.
@@ -63,8 +149,8 @@ export function AdminPanel() {
 
     (async () => {
       try {
-        const res = await fetch("/api/admin/posts");
-        if (!res.ok) throw new Error(`Failed to load posts (${res.status})`);
+        const res = await fetch("/api/admin/posts", { cache: "no-store" });
+        if (!res.ok) throw new Error(`Failed to load essays (${res.status})`);
         const data = await res.json();
         if (cancelled) return;
         setPosts(data.posts);
@@ -86,55 +172,47 @@ export function AdminPanel() {
     };
   }, [reloadKey]);
 
-  const handleLogout = async () => {
-    await fetch("/api/auth", { method: "DELETE" });
-    router.refresh();
-  };
+  const published = posts.filter((p) => !p.draft).length;
+  const drafts = posts.length - published;
 
   const handleNew = () => {
     setEditSlug(null);
     setTitle("");
     setDescription("");
-    setCategory("AI Engineering");
+    setCategory(CATEGORIES[0]);
     setTags("");
     setIsDraft(false);
     setBody("");
+    setNotice(null);
     setShowEditor(true);
   };
 
   const handleEdit = async (slug: string) => {
     try {
-      const res = await fetch(`/api/admin/posts/${slug}`);
-      if (res.ok) {
-        const data = await res.json();
-        setEditSlug(slug);
-        setTitle(data.frontmatter.title);
-        setDescription(data.frontmatter.description);
-        setCategory(data.frontmatter.category);
-        setTags(data.frontmatter.tags.join(", "));
-        setIsDraft(data.frontmatter.draft || false);
-        setBody(data.content);
-        setShowEditor(true);
-      }
-    } catch {
-      // ignore
+      const res = await fetch(`/api/admin/posts/${slug}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Could not open "${slug}" (${res.status}).`);
+      const data = await res.json();
+      setEditSlug(slug);
+      setTitle(data.frontmatter.title);
+      setDescription(data.frontmatter.description);
+      setCategory(data.frontmatter.category);
+      setTags(data.frontmatter.tags.join(", "));
+      setIsDraft(data.frontmatter.draft || false);
+      setBody(data.content);
+      setNotice(null);
+      setShowEditor(true);
+    } catch (err) {
+      setNotice({ tone: "bad", text: err instanceof Error ? err.message : String(err) });
     }
   };
 
   const handleSave = async () => {
     setSaving(true);
+    draft.setStatus("saving");
     try {
-      const slug =
-        editSlug ||
-        title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-
+      const slug = editSlug || slugify(title);
       const method = editSlug ? "PUT" : "POST";
-      const url = editSlug
-        ? `/api/admin/posts/${editSlug}`
-        : "/api/admin/posts";
+      const url = editSlug ? `/api/admin/posts/${editSlug}` : "/api/admin/posts";
 
       const res = await fetch(url, {
         method,
@@ -153,15 +231,20 @@ export function AdminPanel() {
       if (res.ok) {
         draft.markSaved();
         setShowEditor(false);
+        setNotice({
+          tone: "ok",
+          text: editSlug ? `Saved "${title}".` : `Created "${title}" at /blog/${slug}.`,
+        });
         fetchPosts();
+        onChanged();
       } else {
         const data = await res.json().catch(() => ({}));
         draft.setStatus("error");
-        alert(`Failed to save post: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Save failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
       draft.setStatus("error");
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Save failed: ${String(err)}` });
     } finally {
       setSaving(false);
     }
@@ -169,93 +252,131 @@ export function AdminPanel() {
 
   // Leaving the editor with unsaved work used to discard it silently.
   const handleCloseEditor = () => {
-    if (
-      draft.dirty &&
-      !confirm("You have unsaved changes. Leave the editor and lose them?")
-    ) {
+    if (draft.dirty) {
+      setNotice({
+        tone: "warn",
+        text: "You have unsaved changes. Leave the editor and lose them?",
+        confirm: {
+          label: "Leave",
+          tone: "danger",
+          onConfirm: () => {
+            setNotice(null);
+            setShowEditor(false);
+          },
+        },
+      });
       return;
     }
     setShowEditor(false);
   };
 
-  const handleDelete = async (slug: string) => {
-    if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
-
-    try {
-      await fetch(`/api/admin/posts/${slug}`, { method: "DELETE" });
-      fetchPosts();
-    } catch {
-      // ignore
-    }
+  const askDelete = (post: PostEntry) => {
+    setNotice({
+      tone: "bad",
+      text: (
+        <>
+          Delete <b>{post.title}</b>? The essay and its URL are gone for good;
+          view counts and reactions stay in Redis under the old slug.
+        </>
+      ),
+      confirm: {
+        label: "Delete",
+        tone: "danger",
+        onConfirm: async () => {
+          setNotice(null);
+          try {
+            const res = await fetch(`/api/admin/posts/${post.slug}`, { method: "DELETE" });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(data.error ?? `Delete failed (${res.status})`);
+            }
+            setNotice({ tone: "ok", text: `Deleted "${post.title}".` });
+            fetchPosts();
+            onChanged();
+          } catch (err) {
+            setNotice({ tone: "bad", text: err instanceof Error ? err.message : String(err) });
+          }
+        },
+      },
+    });
   };
 
-  const handleNotify = async (slug: string, title: string) => {
+  const askNotify = (post: PostEntry) => {
     if (subscriberCount === 0) {
-      alert("You have no subscribers yet.");
+      setNotice({ tone: "info", text: "There are no subscribers to send to yet." });
       return;
     }
-    if (
-      !confirm(
-        `Email "${title}" to ${subscriberCount} subscriber${subscriberCount === 1 ? "" : "s"}? This cannot be undone.`
-      )
-    ) {
-      return;
-    }
+    setNotice({
+      tone: "warn",
+      text: (
+        <>
+          Email <b>{post.title}</b> to {subscriberCount.toLocaleString()} subscriber
+          {subscriberCount === 1 ? "" : "s"}? Each address gets it once; this
+          cannot be recalled.
+        </>
+      ),
+      confirm: {
+        label: `Send to ${subscriberCount.toLocaleString()}`,
+        onConfirm: () => {
+          setNotice(null);
+          void sendNotify(post);
+        },
+      },
+    });
+  };
 
-    setSendingSlug(slug);
+  const sendNotify = async (post: PostEntry) => {
+    setSendingSlug(post.slug);
     try {
-      const res = await fetch(`/api/admin/posts/${slug}/notify`, {
-        method: "POST",
-      });
+      const res = await fetch(`/api/admin/posts/${post.slug}/notify`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        alert(`Sent to ${data.sent ?? 0} subscriber${data.sent === 1 ? "" : "s"}.`);
-        setPosts((prev) =>
-          prev.map((p) => (p.slug === slug ? { ...p, notified: true } : p))
-        );
+        setNotice({
+          tone: "ok",
+          text: `Sent to ${data.sent ?? 0} subscriber${data.sent === 1 ? "" : "s"}.`,
+        });
+        setPosts((prev) => prev.map((p) => (p.slug === post.slug ? { ...p, notified: true } : p)));
       } else if (data.alreadySent) {
-        alert("This post was already sent to subscribers.");
-        setPosts((prev) =>
-          prev.map((p) => (p.slug === slug ? { ...p, notified: true } : p))
-        );
+        setNotice({ tone: "info", text: "This essay was already sent to subscribers." });
+        setPosts((prev) => prev.map((p) => (p.slug === post.slug ? { ...p, notified: true } : p)));
       } else {
-        alert(`Failed to send: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Send failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Send failed: ${String(err)}` });
     } finally {
       setSendingSlug(null);
     }
   };
 
+  /* ---------------------------------------------------------- editor --- */
+
   if (showEditor) {
+    const previewSlug = editSlug ?? slugify(title);
     return (
-      <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="font-display text-2xl text-primary">
-            {editSlug ? "Edit Post" : "New Post"}
-          </h1>
-          <div className="flex items-center gap-4">
+      <>
+        <SectionSlug tab="posts" fact={editSlug ? `editing /blog/${editSlug}` : "new essay"} />
+
+        <div className="ad-bar">
+          <div>
+            <h1 className="ad-title">{editSlug ? "Edit essay" : "New essay"}</h1>
+          </div>
+          <div className="ad-actions">
             <DraftStatusIndicator status={draft.status} dirty={draft.dirty} />
-            <button
-              onClick={handleCloseEditor}
-              className="text-sm text-secondary hover:text-primary"
-            >
-              &larr; Back to posts
+            <button type="button" onClick={handleCloseEditor} className="ad-link">
+              ← Back to essays
             </button>
           </div>
         </div>
 
         {draft.recovered && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3">
-            <p className="text-sm text-primary">
-              Unsaved changes from{" "}
-              {new Date(draft.recovered.at).toLocaleString()} were recovered
-              from this browser.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
+          <Notice
+            notice={{
+              tone: "warn",
+              text: `Unsaved changes from ${new Date(draft.recovered.at).toLocaleString()} were recovered from this browser.`,
+              confirm: {
+                label: "Restore them",
+                onConfirm: () => {
                   const v = draft.recovered!.value;
                   setTitle(v.title);
                   setDescription(v.description);
@@ -264,259 +385,233 @@ export function AdminPanel() {
                   setIsDraft(v.isDraft);
                   setBody(v.body);
                   draft.dismissRecovered();
-                }}
-                className="rounded-lg bg-accent-blue px-3 py-1.5 text-xs font-medium text-white"
-              >
-                Restore them
-              </button>
-              <button
-                onClick={draft.dismissRecovered}
-                className="rounded-lg border border-glass-border px-3 py-1.5 text-xs text-secondary hover:text-primary"
-              >
-                Discard
-              </button>
-            </div>
-          </div>
+                },
+              },
+            }}
+            onDismiss={draft.dismissRecovered}
+          />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Editor */}
-          <div className="space-y-4">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Post title"
-              className="w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue"
-            />
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Short description"
-              className="w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue"
-            />
-            <div className="flex gap-4">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex-1 rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary outline-none focus:border-accent-blue"
-              >
-                {[
-                  "AI Engineering",
-                  "Web Development",
-                  "Career",
-                  "Tech News",
-                  "Architecture",
-                ].map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <label className="flex items-center gap-2 text-sm text-secondary">
-                <input
-                  type="checkbox"
-                  checked={isDraft}
-                  onChange={(e) => setIsDraft(e.target.checked)}
-                  className="rounded"
-                />
-                Draft
-              </label>
-            </div>
-            <input
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Tags (comma-separated)"
-              className="w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue"
-            />
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Write your MDX content here..."
-              className="w-full h-96 rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue font-mono resize-none"
-            />
-            <button
-              onClick={handleSave}
-              disabled={saving || !title || !description}
-              className="rounded-xl bg-accent-blue px-6 py-3 text-sm font-medium text-white hover:bg-accent-purple transition-colors disabled:opacity-50"
-            >
-              {saving
-                ? "Saving..."
-                : editSlug
-                  ? "Update Post  ⌘S"
-                  : "Create Post  ⌘S"}
-            </button>
-          </div>
+        <Notice notice={notice} onDismiss={() => setNotice(null)} />
 
-          {/* Preview */}
-          <GlassCard className="p-6 h-fit" hover={false}>
-            <p className="text-xs text-muted uppercase tracking-wider mb-4">
-              Preview
-            </p>
-            <div className="prose">
-              <h1>{title || "Untitled"}</h1>
-              <p className="text-secondary">{description}</p>
-              <div className="text-sm text-muted whitespace-pre-wrap font-mono bg-surface-1 p-4 rounded-lg mt-4 max-h-80 overflow-y-auto">
-                {body || "Start writing..."}
+        <div className="ad-editor">
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass} htmlFor="post-title">
+                Title
+              </label>
+              <input
+                id="post-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="What the essay is about, in the fewest words"
+                className={inputClass}
+              />
+              {!editSlug && title && (
+                <span className="ad-help sg-mono">/blog/{previewSlug}</span>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="post-dek">
+                Dek
+              </label>
+              <input
+                id="post-dek"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="One sentence under the title. Also the meta description."
+                className={inputClass}
+              />
+            </div>
+
+            <div className="ad-grid-2">
+              <div>
+                <label className={labelClass} htmlFor="post-category">
+                  Category
+                </label>
+                <select
+                  id="post-category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className={selectClass}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="post-tags">
+                  Tags
+                </label>
+                <input
+                  id="post-tags"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder="agents, evals — comma-separated"
+                  className={inputClass}
+                />
               </div>
             </div>
-          </GlassCard>
+
+            <label className="ad-check">
+              <input
+                type="checkbox"
+                checked={isDraft}
+                onChange={(e) => setIsDraft(e.target.checked)}
+              />
+              Draft — hidden from the site, the feed and subscribers
+            </label>
+
+            <div>
+              <label className={labelClass} htmlFor="post-body">
+                Body · MDX
+              </label>
+              <textarea
+                id="post-body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="## headings become the contents rail. ```mermaid blocks become diagrams."
+                className={`${textareaClass} ad-mono`}
+                style={{ minHeight: 480 }}
+                spellCheck
+              />
+            </div>
+
+            <div className="ad-actions">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !title || !description}
+                className="sg-cta"
+                data-fill="true"
+              >
+                {saving ? "Saving…" : editSlug ? "Save essay" : "Create essay"}
+              </button>
+              <span className="sg-micro">⌘S</span>
+            </div>
+          </div>
+
+          <aside className="ad-panel" aria-label="Preview">
+            <h2 className="ad-panel-h">Preview</h2>
+            <div className="ad-panel-body">
+              <p className="ad-preview-t">{title || "Untitled"}</p>
+              <p className="ad-preview-d">{description || "No dek yet."}</p>
+              <div className="ad-preview">{body || "Start writing…"}</div>
+            </div>
+          </aside>
         </div>
-      </div>
+      </>
     );
   }
 
+  /* ------------------------------------------------------------ list --- */
+
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-6">
-          <h1 className="font-display text-3xl text-primary">Admin</h1>
-          <div className="flex rounded-xl border border-glass-border bg-glass-bg p-1">
-            <button
-              onClick={() => setActiveTab("posts")}
-              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-                activeTab === "posts"
-                  ? "bg-accent-blue text-white"
-                  : "text-secondary hover:text-primary"
-              }`}
-            >
-              Posts
-            </button>
-            <button
-              onClick={() => setActiveTab("projects")}
-              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-                activeTab === "projects"
-                  ? "bg-accent-blue text-white"
-                  : "text-secondary hover:text-primary"
-              }`}
-            >
-              Projects
-            </button>
-            <button
-              onClick={() => setActiveTab("about")}
-              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-                activeTab === "about"
-                  ? "bg-accent-blue text-white"
-                  : "text-secondary hover:text-primary"
-              }`}
-            >
-              About
-            </button>
-            <button
-              onClick={() => setActiveTab("testimonials")}
-              className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-                activeTab === "testimonials"
-                  ? "bg-accent-blue text-white"
-                  : "text-secondary hover:text-primary"
-              }`}
-            >
-              References
-            </button>
-          </div>
+    <>
+      <SectionSlug
+        tab="posts"
+        fact={
+          loading
+            ? "loading"
+            : `${published} published · ${drafts} draft${drafts === 1 ? "" : "s"} · ${subscriberCount.toLocaleString()} subscriber${subscriberCount === 1 ? "" : "s"}`
+        }
+      />
+
+      <div className="ad-bar">
+        <div>
+          <h1 className="ad-title">What I got wrong first</h1>
+          <p>
+            Publishing puts an essay on the site, in the feed and in the sitemap.
+            Subscribers are emailed by hand, from the row, once.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="rounded-xl border border-glass-border bg-glass-bg px-4 py-2 text-sm text-secondary hover:text-primary transition-all"
-          >
-            Dashboard
-          </Link>
-          {activeTab === "posts" && (
-            <button
-              onClick={handleNew}
-              className="rounded-xl bg-accent-blue px-4 py-2 text-sm font-medium text-white hover:bg-accent-purple transition-colors"
-            >
-              New Post
-            </button>
-          )}
-          <button
-            onClick={handleLogout}
-            className="rounded-xl border border-glass-border bg-glass-bg px-4 py-2 text-sm text-secondary hover:text-primary transition-all"
-          >
-            Logout
+        <div className="ad-actions">
+          <button type="button" onClick={handleNew} className="sg-cta" data-fill="true">
+            New essay
           </button>
         </div>
       </div>
 
-      {activeTab === "testimonials" ? (
-        <TestimonialsEditor />
-      ) : activeTab === "about" ? (
-        <AboutEditor />
-      ) : activeTab === "projects" ? (
-        <ProjectsEditor />
-      ) : loadError ? (
-        <GlassCard className="p-8 text-center" hover={false}>
-          <p className="text-error text-sm">{loadError}</p>
-        </GlassCard>
-      ) : loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl animate-shimmer" />
-          ))}
+      <Notice notice={notice} onDismiss={() => setNotice(null)} />
+
+      {loadError ? (
+        <div className="ad-notice" data-tone="bad" role="alert">
+          <span>{loadError}</span>
+          <span className="ad-notice-actions">
+            <button type="button" className="ad-link" onClick={fetchPosts}>
+              Retry
+            </button>
+          </span>
         </div>
+      ) : loading ? (
+        <Skeleton rows={4} />
       ) : posts.length === 0 ? (
-        <GlassCard className="p-12 text-center" hover={false}>
-          <p className="text-secondary">No posts yet. Create your first one!</p>
-        </GlassCard>
+        <div className="ad-empty">No essays yet. The first one is the hardest.</div>
       ) : (
-        <div className="space-y-3">
-          {posts.map((post) => (
-            <GlassCard key={post.slug} className="p-4" hover={false}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <h3 className="text-sm font-medium text-primary">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-muted mt-0.5">
-                      {post.date} · {post.category}
-                    </p>
+        <div className="ad-rows">
+          {posts.map((post) => {
+            const v = views.get(post.slug);
+            return (
+              <article key={post.slug} className="ad-row">
+                <span className="ad-row-r">{post.date}</span>
+
+                <div className="min-w-0">
+                  <h3 className="ad-row-t">{post.title}</h3>
+                  <div className="ad-row-meta">
+                    <span className="ad-row-r">{post.category}</span>
+                    {post.draft ? <Tag tone="draft">Draft</Tag> : <Tag tone="live">Live</Tag>}
+                    {post.notified && <Tag>Sent to subscribers</Tag>}
                   </div>
-                  {post.draft && <Badge variant="accent">Draft</Badge>}
                 </div>
-                <div className="flex items-center gap-2">
-                  {!post.draft &&
-                    (post.notified ? (
-                      <span
-                        className="text-xs text-teal-400 px-2 py-1"
-                        title="This post was emailed to subscribers"
-                      >
-                        Sent ✓
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleNotify(post.slug, post.title)}
-                        disabled={sendingSlug === post.slug}
-                        className="text-xs text-accent-blue hover:text-accent-purple transition-colors px-2 py-1 disabled:opacity-50"
-                        title="Email this post to your subscribers"
-                      >
-                        {sendingSlug === post.slug ? "Sending..." : "Send to subscribers"}
-                      </button>
-                    ))}
-                  <button
-                    onClick={() => handleEdit(post.slug)}
-                    className="text-xs text-secondary hover:text-primary transition-colors px-2 py-1"
-                  >
+
+                <div className="ad-row-actions">
+                  <span className="ad-fig" title="Deduplicated views, all time">
+                    <span className="ad-fig-v">
+                      {viewsReady ? (v ?? 0).toLocaleString() : "–"}
+                    </span>
+                    <span className="ad-fig-k">views</span>
+                  </span>
+                  {!post.draft && !post.notified && (
+                    <button
+                      type="button"
+                      onClick={() => askNotify(post)}
+                      disabled={sendingSlug === post.slug}
+                      className="ad-link"
+                      title="Email this essay to your subscribers"
+                    >
+                      {sendingSlug === post.slug ? "Sending…" : "Send"}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => handleEdit(post.slug)} className="ad-link">
                     Edit
                   </button>
-                  <Link
+                  <a
                     href={`/blog/${post.slug}`}
-                    className="text-xs text-secondary hover:text-primary transition-colors px-2 py-1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ad-link"
                   >
-                    View
-                  </Link>
+                    View ↗
+                  </a>
                   <button
-                    onClick={() => handleDelete(post.slug)}
-                    className="text-xs text-error hover:text-error/80 transition-colors px-2 py-1"
+                    type="button"
+                    onClick={() => askDelete(post)}
+                    className="ad-link"
+                    data-tone="danger"
                   >
                     Delete
                   </button>
                 </div>
-              </div>
-            </GlassCard>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -532,21 +627,28 @@ function DraftStatusIndicator({
   dirty: boolean;
 }) {
   if (status === "error") {
-    return <span className="text-xs text-error">Save failed</span>;
+    return (
+      <span className="sg-micro" style={{ color: "var(--bad)" }}>
+        Save failed
+      </span>
+    );
   }
   if (status === "saving") {
-    return <span className="text-xs text-muted">Saving…</span>;
+    return <span className="sg-micro">Saving…</span>;
   }
   if (dirty) {
     return (
-      <span className="flex items-center gap-1.5 text-xs text-warning">
-        <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-        Unsaved changes — kept in this browser
+      <span className="sg-micro" style={{ color: "var(--warn)" }}>
+        Unsaved · kept in this browser
       </span>
     );
   }
   if (status === "saved") {
-    return <span className="text-xs text-success">Saved</span>;
+    return (
+      <span className="sg-micro" style={{ color: "var(--signal)" }}>
+        Saved
+      </span>
+    );
   }
   return null;
 }
