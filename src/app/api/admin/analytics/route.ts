@@ -2,8 +2,60 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { redis } from "@/lib/redis";
 import { getAllPosts } from "@/lib/posts";
+import type { Reactions } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+const DAYS = 30;
+const EMPTY_REACTIONS: Reactions = { fire: 0, heart: 0, mindblown: 0, idea: 0 };
+
+export interface PostStat {
+  slug: string;
+  title: string;
+  draft: boolean;
+  date: string;
+  views: number;
+  reactions: Reactions;
+}
+
+export interface AnalyticsPayload {
+  totalViews: number;
+  /** Deduplicated views recorded in the last seven UTC days, today included. */
+  last7Views: number;
+  todayViews: number;
+  totalReactions: number;
+  totalPosts: number;
+  publishedPosts: number;
+  draftPosts: number;
+  avgViewsPerPost: number;
+  subscribers: number;
+  postStats: PostStat[];
+  dailyViews: { date: string; views: number }[];
+  /** ISO timestamp of this response, so the UI can say how fresh it is. */
+  generatedAt: string;
+  /** False when Redis is not configured — every number above is then zero. */
+  tracking: boolean;
+}
+
+/** The last DAYS calendar days in UTC, oldest first. Matches /api/views. */
+function recentDays(): string[] {
+  const out: string[] = [];
+  const now = Date.now();
+  for (let i = DAYS - 1; i >= 0; i--) {
+    out.push(new Date(now - i * 86_400_000).toISOString().slice(0, 10));
+  }
+  return out;
+}
+
+function toReactions(raw: unknown): Reactions {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  return {
+    fire: Number(r.fire ?? 0),
+    heart: Number(r.heart ?? 0),
+    mindblown: Number(r.mindblown ?? 0),
+    idea: Number(r.idea ?? 0),
+  };
+}
 
 export async function GET() {
   const isAuth = await verifyAuth();
@@ -11,67 +63,97 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const posts = await getAllPosts(true); // include drafts in analytics
+  const posts = await getAllPosts(true); // drafts included: they can have views from preview links
+  const days = recentDays();
+  const published = posts.filter((p) => !p.frontmatter.draft).length;
+
+  const base = {
+    totalPosts: posts.length,
+    publishedPosts: published,
+    draftPosts: posts.length - published,
+    generatedAt: new Date().toISOString(),
+  };
 
   if (!redis) {
-    return NextResponse.json({
+    const payload: AnalyticsPayload = {
+      ...base,
       totalViews: 0,
+      last7Views: 0,
+      todayViews: 0,
       totalReactions: 0,
-      totalPosts: posts.length,
       avgViewsPerPost: 0,
       subscribers: 0,
       postStats: posts.map((p) => ({
         slug: p.slug,
         title: p.frontmatter.title,
+        draft: p.frontmatter.draft ?? false,
+        date: p.frontmatter.date,
         views: 0,
-        reactions: { fire: 0, heart: 0, mindblown: 0, idea: 0 },
+        reactions: EMPTY_REACTIONS,
       })),
-      dailyViews: [],
-    });
+      dailyViews: days.map((date) => ({ date, views: 0 })),
+      tracking: false,
+    };
+    return NextResponse.json(payload);
   }
 
-  const r = redis;
-  const subscribers = await r.scard("subscribers");
-  const postStats = await Promise.all(
-    posts.map(async (post) => {
-      const views = (await r.get<number>(`views:${post.slug}`)) ?? 0;
-      const reactions = (await r.hgetall(`reactions:${post.slug}`)) as Record<string, number> | null;
-      return {
-        slug: post.slug,
-        title: post.frontmatter.title,
-        views,
-        reactions: {
-          fire: Number(reactions?.fire ?? 0),
-          heart: Number(reactions?.heart ?? 0),
-          mindblown: Number(reactions?.mindblown ?? 0),
-          idea: Number(reactions?.idea ?? 0),
-        },
-      };
-    })
-  );
+  /*
+   * One round trip. The previous version issued 2 sequential GETs per post
+   * plus 30 sequential GETs for the daily series — 40+ serial HTTP requests
+   * to Upstash for a dashboard that should feel instant.
+   */
+  const p = redis.pipeline();
+  p.scard("subscribers");
+  p.mget(...days.map((d) => `daily-views:${d}`));
+  if (posts.length > 0) {
+    p.mget(...posts.map((post) => `views:${post.slug}`));
+  }
+  for (const post of posts) {
+    p.hgetall(`reactions:${post.slug}`);
+  }
+  const results = await p.exec<unknown[]>();
 
-  const totalViews = postStats.reduce((sum, p) => sum + p.views, 0);
+  let i = 0;
+  const subscribers = Number(results[i++] ?? 0);
+  const dailyRaw = (results[i++] ?? []) as (number | string | null)[];
+  const viewsRaw = posts.length > 0 ? ((results[i++] ?? []) as (number | string | null)[]) : [];
+  const reactionsRaw = results.slice(i, i + posts.length);
+
+  const postStats: PostStat[] = posts.map((post, idx) => ({
+    slug: post.slug,
+    title: post.frontmatter.title,
+    draft: post.frontmatter.draft ?? false,
+    date: post.frontmatter.date,
+    views: Number(viewsRaw[idx] ?? 0),
+    reactions: toReactions(reactionsRaw[idx]),
+  }));
+
+  const dailyViews = days.map((date, idx) => ({
+    date,
+    views: Number(dailyRaw[idx] ?? 0),
+  }));
+
+  const totalViews = postStats.reduce((sum, s) => sum + s.views, 0);
   const totalReactions = postStats.reduce(
-    (sum, p) => sum + p.reactions.fire + p.reactions.heart + p.reactions.mindblown + p.reactions.idea,
+    (sum, s) =>
+      sum + s.reactions.fire + s.reactions.heart + s.reactions.mindblown + s.reactions.idea,
     0
   );
+  const last7Views = dailyViews.slice(-7).reduce((sum, d) => sum + d.views, 0);
+  const todayViews = dailyViews[dailyViews.length - 1]?.views ?? 0;
 
-  const dailyViews: { date: string; views: number }[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split("T")[0];
-    const views = (await r.get<number>(`daily-views:${dateStr}`)) ?? 0;
-    dailyViews.push({ date: dateStr, views });
-  }
-
-  return NextResponse.json({
+  const payload: AnalyticsPayload = {
+    ...base,
     totalViews,
+    last7Views,
+    todayViews,
     totalReactions,
-    totalPosts: posts.length,
-    avgViewsPerPost: posts.length > 0 ? Math.round(totalViews / posts.length) : 0,
+    avgViewsPerPost: published > 0 ? Math.round(totalViews / published) : 0,
     subscribers,
     postStats: postStats.sort((a, b) => b.views - a.views),
     dailyViews,
-  });
+    tracking: true,
+  };
+
+  return NextResponse.json(payload);
 }

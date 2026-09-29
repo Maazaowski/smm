@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "@/lib/redis";
+import { clientIp } from "@/lib/request";
+
+/* Views are deduplicated per reader anyway; this only stops a loop. */
+const ratelimit =
+  redis &&
+  new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, "1 m"),
+    prefix: "ratelimit:views",
+  });
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
@@ -12,15 +23,22 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { slug } = body as { slug: string };
+  const body = await request.json().catch(() => ({}));
+  const { slug } = body as { slug?: string };
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
 
   if (!redis) return NextResponse.json({ views: 0 });
 
+  const ip = clientIp(request);
+  if (ratelimit) {
+    const { success } = await ratelimit.limit(ip);
+    if (!success) {
+      const views = (await redis.get<number>(`views:${slug}`)) ?? 0;
+      return NextResponse.json({ views }, { status: 429 });
+    }
+  }
+
   // Deduplicate by hashed IP
-  const forwarded = request.headers.get("x-forwarded-for");
-  const ip = forwarded?.split(",")[0]?.trim() ?? "unknown";
   const data = new TextEncoder().encode(ip + slug);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashHex = Array.from(new Uint8Array(hashBuffer))

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
+import { Tag } from "@/components/admin/admin-shell";
 import {
   RowControls,
   inputClass,
@@ -67,6 +67,7 @@ export function ProjectsEditor() {
   const [syncing, setSyncing] = useState(false);
   const [syncResults, setSyncResults] = useState<SyncResult[] | null>(null);
   const [tokenError, setTokenError] = useState(false);
+  const [notice, setNotice] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
 
   const loadProjects = useCallback(async () => {
     const res = await fetch("/api/admin/projects");
@@ -122,7 +123,7 @@ export function ProjectsEditor() {
     try {
       const res = await fetch(`/api/admin/projects/${slug}`);
       if (!res.ok) {
-        alert("Failed to load project.");
+        setNotice({ tone: "bad", text: "Failed to load project." });
         return;
       }
       const data = await res.json();
@@ -131,7 +132,7 @@ export function ProjectsEditor() {
       setEditSlug(slug);
       setShowEditor(true);
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Error: ${String(err)}` });
     }
   };
 
@@ -152,13 +153,14 @@ export function ProjectsEditor() {
 
       if (res.ok) {
         setShowEditor(false);
+        setNotice({ tone: "ok", text: `Saved "${draft.title}".` });
         await reload();
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(`Failed to save: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Save failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Error: ${String(err)}` });
     } finally {
       setSaving(false);
     }
@@ -172,10 +174,10 @@ export function ProjectsEditor() {
         await reload();
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(`Failed to delete: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Delete failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Error: ${String(err)}` });
     }
   };
 
@@ -191,10 +193,10 @@ export function ProjectsEditor() {
         setTokenError(Boolean(data.tokenError));
         await reload();
       } else {
-        alert(`Sync failed: ${data.error ?? res.statusText}`);
+        setNotice({ tone: "bad", text: `Sync failed: ${data.error ?? res.statusText}` });
       }
     } catch (err) {
-      alert(`Error: ${String(err)}`);
+      setNotice({ tone: "bad", text: `Error: ${String(err)}` });
     } finally {
       setSyncing(false);
     }
@@ -205,19 +207,31 @@ export function ProjectsEditor() {
   if (showEditor) {
     return (
       <div>
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="font-display text-2xl text-primary">
-            {editSlug ? "Edit Project" : "New Project"}
-          </h2>
+        <div className="ad-bar">
+          <div>
+            <h1 className="ad-title">{editSlug ? "Edit project" : "New project"}</h1>
+          </div>
           <button
+            type="button"
             onClick={() => setShowEditor(false)}
-            className="text-sm text-secondary hover:text-primary"
+            className="ad-link"
           >
-            &larr; Back to projects
+            ← Back to work
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {notice && (
+          <div className="ad-notice" data-tone={notice.tone} role="status">
+            <span>{notice.text}</span>
+            <span className="ad-notice-actions">
+              <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+                Dismiss
+              </button>
+            </span>
+          </div>
+        )}
+
+        <div className="ad-editor">
           {/* Fields */}
           <div className="space-y-4">
             <div>
@@ -231,20 +245,20 @@ export function ProjectsEditor() {
                   );
                 }}
                 placeholder="Project title"
-                className={`mt-1 ${inputClass}`}
+                className={inputClass}
               />
             </div>
 
             <div>
               <label className={labelClass}>
-                Slug {editSlug && <span className="normal-case">(locked)</span>}
+                Slug {editSlug && <span style={{ textTransform: "none" }}>(locked)</span>}
               </label>
               <input
                 value={draft.slug}
                 onChange={(e) => patch({ slug: slugify(e.target.value) })}
                 disabled={Boolean(editSlug)}
                 placeholder="project-slug"
-                className={`mt-1 ${inputClass} disabled:opacity-50`}
+                className={inputClass}
               />
             </div>
 
@@ -254,7 +268,7 @@ export function ProjectsEditor() {
                 value={draft.summary}
                 onChange={(e) => patch({ summary: e.target.value })}
                 placeholder="One line — card subtitle and meta description"
-                className={`mt-1 ${inputClass}`}
+                className={inputClass}
               />
             </div>
 
@@ -265,17 +279,17 @@ export function ProjectsEditor() {
                 onChange={(e) => patch({ description: e.target.value })}
                 rows={4}
                 placeholder="Shown on the card"
-                className={`mt-1 ${textareaClass}`}
+                className={textareaClass}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="ad-grid-2">
               <div>
                 <label className={labelClass}>Category</label>
                 <select
                   value={draft.category}
                   onChange={(e) => patch({ category: e.target.value })}
-                  className={`mt-1 ${selectClass}`}
+                  className={selectClass}
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -291,7 +305,7 @@ export function ProjectsEditor() {
                   onChange={(e) =>
                     patch({ status: e.target.value as ProjectInput["status"] })
                   }
-                  className={`mt-1 ${selectClass}`}
+                  className={selectClass}
                 >
                   {PROJECT_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -302,7 +316,7 @@ export function ProjectsEditor() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="ad-grid-2">
               <div>
                 <label className={labelClass}>Kind</label>
                 <select
@@ -310,7 +324,7 @@ export function ProjectsEditor() {
                   onChange={(e) =>
                     patch({ kind: e.target.value as ProjectInput["kind"] })
                   }
-                  className={`mt-1 ${selectClass}`}
+                  className={selectClass}
                 >
                   {PROJECT_KINDS.map((k) => (
                     <option key={k} value={k}>
@@ -325,7 +339,7 @@ export function ProjectsEditor() {
                   value={draft.year}
                   onChange={(e) => patch({ year: e.target.value })}
                   placeholder="2026"
-                  className={`mt-1 ${inputClass}`}
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -337,19 +351,19 @@ export function ProjectsEditor() {
                   value={draft.client}
                   onChange={(e) => patch({ client: e.target.value })}
                   placeholder="Real name, or anonymised"
-                  className={`mt-1 ${inputClass}`}
+                  className={inputClass}
                 />
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="ad-grid-2">
               <div>
                 <label className={labelClass}>Repo owner</label>
                 <input
                   value={draft.repoOwner ?? ""}
                   onChange={(e) => patch({ repoOwner: e.target.value || null })}
                   placeholder="Maazaowski"
-                  className={`mt-1 ${inputClass}`}
+                  className={inputClass}
                 />
               </div>
               <div>
@@ -358,31 +372,29 @@ export function ProjectsEditor() {
                   value={draft.repoName ?? ""}
                   onChange={(e) => patch({ repoName: e.target.value || null })}
                   placeholder="Signal"
-                  className={`mt-1 ${inputClass}`}
+                  className={inputClass}
                 />
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
-              <label className="flex items-center gap-2 text-sm text-secondary">
+              <label className="ad-check">
                 <input
                   type="checkbox"
                   checked={draft.featured}
                   onChange={(e) => patch({ featured: e.target.checked })}
-                  className="rounded"
                 />
                 Featured
               </label>
-              <label className="flex items-center gap-2 text-sm text-secondary">
+              <label className="ad-check">
                 <input
                   type="checkbox"
                   checked={draft.draft}
                   onChange={(e) => patch({ draft: e.target.checked })}
-                  className="rounded"
                 />
                 Draft
               </label>
-              <label className="flex items-center gap-2 text-sm text-secondary">
+              <label className="ad-check">
                 Order
                 <input
                   type="number"
@@ -390,7 +402,8 @@ export function ProjectsEditor() {
                   onChange={(e) =>
                     patch({ sortOrder: Number(e.target.value) || 0 })
                   }
-                  className="w-20 rounded-lg border border-glass-border bg-surface-1 px-2 py-1 text-sm text-primary outline-none focus:border-accent-blue"
+                  className={`${inputClass} ad-mono w-20`}
+                  style={{ minHeight: 32, padding: "4px 8px" }}
                 />
               </label>
             </div>
@@ -408,7 +421,7 @@ export function ProjectsEditor() {
                   })
                 }
                 placeholder="TypeScript, Next.js, PostgreSQL"
-                className={`mt-1 ${inputClass}`}
+                className={inputClass}
               />
             </div>
 
@@ -433,60 +446,57 @@ export function ProjectsEditor() {
                 value={draft.body}
                 onChange={(e) => patch({ body: e.target.value })}
                 placeholder="Write the case study in MDX. ## headings become the table of contents."
-                className={`mt-1 h-96 ${textareaClass} font-mono`}
+                className={`${textareaClass} ad-mono`}
+                style={{ minHeight: 420 }}
               />
             </div>
 
             <button
+              type="button"
               onClick={handleSave}
               disabled={saving || !draft.title || !draft.slug}
-              className="rounded-xl bg-accent-blue px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-purple disabled:opacity-50"
+              className="sg-cta"
+              data-fill="true"
             >
-              {saving
-                ? "Saving..."
-                : editSlug
-                  ? "Update Project"
-                  : "Create Project"}
+              {saving ? "Saving…" : editSlug ? "Save project" : "Create project"}
             </button>
           </div>
 
           {/* Preview + synced stats */}
-          <div className="space-y-6">
-            <GlassCard className="h-fit p-6" hover={false}>
-              <p className={`${labelClass} mb-4 block`}>Preview</p>
-              <div className="prose">
-                <h1>{draft.title || "Untitled"}</h1>
-                <p className="text-secondary">{draft.summary}</p>
-                <div className="mt-4 max-h-80 overflow-y-auto rounded-lg bg-surface-1 p-4 font-mono text-sm whitespace-pre-wrap text-muted">
-                  {draft.body || "Start writing..."}
-                </div>
+          <div>
+            <aside className="ad-panel" aria-label="Preview">
+              <h2 className="ad-panel-h">Preview</h2>
+              <div className="ad-panel-body">
+                <p className="ad-preview-t">{draft.title || "Untitled"}</p>
+                <p className="ad-preview-d">{draft.summary || "No summary yet."}</p>
+                <div className="ad-preview">{draft.body || "Start writing…"}</div>
               </div>
-            </GlassCard>
+            </aside>
 
-            <GlassCard className="h-fit p-6" hover={false}>
-              <p className={`${labelClass} mb-4 block`}>
-                Synced from GitHub (read-only)
-              </p>
-              {stats ? (
-                <>
-                  {stats.visibility === "private" && (
-                    <p className="mb-3 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
-                      Private repo — repo URL, branch, topics and releases are
-                      redacted at sync time. Everything below is what the public
-                      page can see.
-                    </p>
-                  )}
-                  <pre className="max-h-80 overflow-auto rounded-lg bg-surface-1 p-4 font-mono text-[11px] leading-relaxed text-muted">
-                    {JSON.stringify(stats, null, 2)}
-                  </pre>
-                </>
-              ) : (
-                <p className="text-sm text-muted">
-                  No stats yet. Set a repo owner and name, save, then press
-                  &ldquo;Sync now&rdquo; on the projects list.
-                </p>
-              )}
-            </GlassCard>
+            <aside className="ad-panel" aria-label="Synced from GitHub">
+              <h2 className="ad-panel-h">Synced from GitHub · read-only</h2>
+              <div className="ad-panel-body">
+                {stats ? (
+                  <>
+                    {stats.visibility === "private" && (
+                      <div className="ad-notice" data-tone="warn" role="note">
+                        <span>
+                          Private repo — repo URL, branch, topics and releases
+                          are redacted at sync time. Everything below is what
+                          the public page can see.
+                        </span>
+                      </div>
+                    )}
+                    <pre className="ad-preview">{JSON.stringify(stats, null, 2)}</pre>
+                  </>
+                ) : (
+                  <p className="ad-help" style={{ margin: 0 }}>
+                    No stats yet. Set a repo owner and name, save, then press
+                    &ldquo;Sync now&rdquo; on the work list.
+                  </p>
+                )}
+              </div>
+            </aside>
           </div>
         </div>
       </div>
@@ -497,146 +507,158 @@ export function ProjectsEditor() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-secondary">
-          {rows.length} project{rows.length === 1 ? "" : "s"}
-        </p>
-        <div className="flex items-center gap-3">
+      <div className="ad-bar">
+        <div>
+          <h1 className="ad-title">Things that are running</h1>
+          <p>
+            {rows.length} project{rows.length === 1 ? "" : "s"}. A full sync
+            takes 10–30 seconds; GitHub warms its activity stats on first
+            request.
+          </p>
+        </div>
+        <div className="ad-actions">
           <button
+            type="button"
             onClick={handleSync}
             disabled={syncing}
-            className="rounded-xl border border-glass-border bg-glass-bg px-4 py-2 text-sm text-secondary transition-colors hover:text-primary disabled:opacity-50"
+            className="sg-cta"
           >
-            {syncing ? "Syncing..." : "Sync now"}
+            {syncing ? "Syncing…" : "Sync now"}
           </button>
-          <button
-            onClick={handleNew}
-            className="rounded-xl bg-accent-blue px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-purple"
-          >
-            New Project
+          <button type="button" onClick={handleNew} className="sg-cta" data-fill="true">
+            New project
           </button>
         </div>
       </div>
 
-      <p className="mb-6 text-xs text-muted">
-        A full sync takes 10–30 seconds; GitHub warms its activity stats on
-        first request.
-      </p>
+      {notice && (
+        <div className="ad-notice" data-tone={notice.tone} role="status">
+          <span>{notice.text}</span>
+          <span className="ad-notice-actions">
+            <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+              Dismiss
+            </button>
+          </span>
+        </div>
+      )}
 
       {tokenError && (
-        <div className="mb-6 rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-          GitHub token invalid or expired. Check{" "}
-          <code className="font-mono">GITHUB_SYNC_TOKEN</code>.
+        <div className="ad-notice" data-tone="bad" role="alert">
+          <span>
+            GitHub token invalid or expired. Check{" "}
+            <code className="sg-mono">GITHUB_SYNC_TOKEN</code>.
+          </span>
         </div>
       )}
 
       {syncResults && (
-        <div className="mb-6 space-y-1 rounded-xl border border-glass-border bg-glass-bg p-4">
-          {syncResults.length === 0 ? (
-            <p className="text-sm text-muted">
-              No projects have a repo configured.
-            </p>
-          ) : (
-            syncResults.map((r) => (
-              <p key={r.slug} className="flex items-center gap-2 text-sm">
-                <span
-                  className={
-                    r.status === "ok"
-                      ? "text-success"
-                      : r.status === "partial"
-                        ? "text-warning"
-                        : "text-error"
-                  }
-                >
-                  {r.status === "ok" ? "✓" : r.status === "partial" ? "!" : "✗"}
-                </span>
-                <span className="text-secondary">{r.slug}</span>
-                {r.error && <span className="text-xs text-muted">{r.error}</span>}
-              </p>
-            ))
-          )}
+        <div className="ad-notice" data-tone="info" role="status">
+          <div>
+            {syncResults.length === 0 ? (
+              <span>No projects have a repo configured.</span>
+            ) : (
+              syncResults.map((r) => (
+                <p key={r.slug} className="flex items-center gap-2" style={{ margin: 0 }}>
+                  <span
+                    className="sg-mono"
+                    style={{
+                      color:
+                        r.status === "ok"
+                          ? "var(--signal)"
+                          : r.status === "partial"
+                            ? "var(--warn)"
+                            : "var(--bad)",
+                    }}
+                  >
+                    {r.status === "ok" ? "✓" : r.status === "partial" ? "!" : "✗"}
+                  </span>
+                  <span className="sg-mono">{r.slug}</span>
+                  {r.error && <span className="ad-help" style={{ margin: 0 }}>{r.error}</span>}
+                </p>
+              ))
+            )}
+          </div>
+          <span className="ad-notice-actions">
+            <button type="button" className="ad-link" onClick={() => setSyncResults(null)}>
+              Dismiss
+            </button>
+          </span>
         </div>
       )}
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="ad-rows" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 animate-shimmer rounded-2xl" />
+            <div key={i} className="ad-skeleton" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <GlassCard className="p-12 text-center" hover={false}>
-          <p className="text-secondary">No projects yet.</p>
-        </GlassCard>
+        <div className="ad-empty">No projects yet.</div>
       ) : (
-        <div className="space-y-3">
+        <div className="ad-rows">
           {rows.map((row) => (
-            <GlassCard key={row.slug} className="p-4" hover={false}>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-medium text-primary">{row.title}</h3>
-                    <span className="rounded-full border border-accent-blue/20 bg-accent-blue/10 px-2 py-0.5 text-[11px] font-medium text-accent-blue">
-                      {STATUS_LABELS[row.status]}
+            <article
+              key={row.slug}
+              className="ad-row"
+              style={{ gridTemplateColumns: "72px minmax(0, 1fr) auto" }}
+            >
+              <span className="ad-row-r">{row.year || "—"}</span>
+              <div className="min-w-0">
+                <h3 className="ad-row-t">
+                  {row.title}
+                  {row.featured && (
+                    <span className="sg-micro" style={{ marginLeft: 8 }} title="Featured">
+                      ★
                     </span>
-                    {row.draft && (
-                      <span className="rounded-full border border-glass-border bg-surface-2 px-2 py-0.5 text-[11px] text-secondary">
-                        Draft
+                  )}
+                </h3>
+                <div className="ad-row-meta">
+                  <span className="ad-row-r">
+                    {row.slug} · {row.category}
+                  </span>
+                  <Tag>{STATUS_LABELS[row.status]}</Tag>
+                  {row.draft ? <Tag tone="draft">Draft</Tag> : <Tag tone="live">Live</Tag>}
+                  {row.repoOwner && row.repoName && (
+                    <Tag
+                      tone={
+                        row.syncStatus === "error"
+                          ? "bad"
+                          : row.syncStatus === "partial"
+                            ? "warn"
+                            : undefined
+                      }
+                    >
+                      <span title={row.syncError ?? undefined}>
+                        {relative(row.syncedAt)}
+                        {row.syncError && ` (${row.syncError})`}
                       </span>
-                    )}
-                    {row.featured && (
-                      <span className="text-[11px] text-muted">★</span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-muted">
-                    {row.slug} &middot; {row.category}
-                    {row.year && <> &middot; {row.year}</>}
-                    {row.repoOwner && row.repoName && (
-                      <>
-                        {" "}
-                        &middot;{" "}
-                        <span
-                          className={
-                            row.syncStatus === "error"
-                              ? "text-error"
-                              : row.syncStatus === "partial"
-                                ? "text-warning"
-                                : ""
-                          }
-                          title={row.syncError ?? undefined}
-                        >
-                          {relative(row.syncedAt)}
-                          {row.syncError && ` (${row.syncError})`}
-                        </span>
-                      </>
-                    )}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 text-sm">
-                  <button
-                    onClick={() => handleEdit(row.slug)}
-                    className="text-secondary hover:text-primary"
-                  >
-                    Edit
-                  </button>
-                  <a
-                    href={`/projects/${row.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-secondary hover:text-primary"
-                  >
-                    View
-                  </a>
-                  <button
-                    onClick={() => handleDelete(row.slug)}
-                    className="text-error hover:underline"
-                  >
-                    Delete
-                  </button>
+                    </Tag>
+                  )}
                 </div>
               </div>
-            </GlassCard>
+
+              <div className="ad-row-actions">
+                <button type="button" onClick={() => handleEdit(row.slug)} className="ad-link">
+                  Edit
+                </button>
+                <a
+                  href={`/projects/${row.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ad-link"
+                >
+                  View ↗
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(row.slug)}
+                  className="ad-link"
+                  data-tone="danger"
+                >
+                  Delete
+                </button>
+              </div>
+            </article>
           ))}
         </div>
       )}
@@ -655,12 +677,12 @@ function OutcomesEditor({
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Outcomes</label>
         <button
           type="button"
           onClick={() => onChange([...outcomes, ""])}
-          className="text-xs text-accent-blue hover:underline"
+          className="ad-link"
         >
           + Add
         </button>
@@ -677,6 +699,7 @@ function OutcomesEditor({
               className={inputClass}
             />
             <RowControls
+              label="outcome"
               index={i}
               length={outcomes.length}
               onMove={(d) => onChange(moveItem(outcomes, i, d))}
@@ -701,12 +724,12 @@ function LinksEditor({
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Links</label>
         <button
           type="button"
           onClick={() => onChange([...links, { label: "", href: "https://" }])}
-          className="text-xs text-accent-blue hover:underline"
+          className="ad-link"
         >
           + Add
         </button>
@@ -727,6 +750,7 @@ function LinksEditor({
               className={inputClass}
             />
             <RowControls
+              label="link"
               index={i}
               length={links.length}
               onMove={(d) => onChange(moveItem(links, i, d))}
@@ -751,7 +775,7 @@ function GalleryEditor({
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Screenshots</label>
         <button
           type="button"
@@ -761,14 +785,14 @@ function GalleryEditor({
               { src: "/images/projects/", alt: "", width: 1600, height: 1000 },
             ])
           }
-          className="text-xs text-accent-blue hover:underline"
+          className="ad-link"
         >
           + Add
         </button>
       </div>
       {gallery.length > 0 && (
-        <p className="mb-2 text-xs text-muted">
-          Commit the file under <code className="font-mono">public/</code> first;
+        <p className="ad-help" style={{ margin: "0 0 8px" }}>
+          Commit the file under <code className="sg-mono">public/</code> first;
           remote URLs are rejected.
         </p>
       )}
@@ -776,7 +800,7 @@ function GalleryEditor({
         {gallery.map((g, i) => (
           <div
             key={i}
-            className="space-y-2 rounded-xl border border-glass-border p-3"
+            className="ad-sub space-y-2"
           >
             <div className="flex items-center gap-2">
               <input
@@ -786,6 +810,7 @@ function GalleryEditor({
                 className={inputClass}
               />
               <RowControls
+                label="screenshot"
                 index={i}
                 length={gallery.length}
                 onMove={(d) => onChange(moveItem(gallery, i, d))}
@@ -812,14 +837,14 @@ function GalleryEditor({
                 value={g.width}
                 onChange={(e) => update(i, { width: Number(e.target.value) || 0 })}
                 placeholder="Width"
-                className="w-24 rounded-xl border border-glass-border bg-surface-1 px-3 py-3 text-sm text-primary outline-none focus:border-accent-blue"
+                className={`${inputClass} ad-mono w-24`}
               />
               <input
                 type="number"
                 value={g.height}
                 onChange={(e) => update(i, { height: Number(e.target.value) || 0 })}
                 placeholder="Height"
-                className="w-24 rounded-xl border border-glass-border bg-surface-1 px-3 py-3 text-sm text-primary outline-none focus:border-accent-blue"
+                className={`${inputClass} ad-mono w-24`}
               />
             </div>
           </div>

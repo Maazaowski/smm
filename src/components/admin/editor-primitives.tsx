@@ -1,25 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
 
 /**
  * Shared building blocks for the admin editors. These lived in about-editor.tsx
  * until the projects editor needed the same three, at which point a second copy
  * became a maintenance problem rather than a convenience.
+ *
+ * The class names resolve to admin.css. They are exported as strings rather
+ * than components so the editors can keep composing them with the odd layout
+ * utility (`w-1/3`, `h-96`) without a wrapper per field.
  */
 
-export const inputClass =
-  "w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue";
+export const inputClass = "ad-field";
 
-export const textareaClass =
-  "w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue resize-none";
+export const textareaClass = "ad-field ad-textarea";
 
-export const selectClass =
-  "w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary outline-none focus:border-accent-blue";
+export const selectClass = "ad-field ad-select";
 
-export const labelClass =
-  "text-xs font-medium text-muted uppercase tracking-wider";
+export const labelClass = "ad-label";
 
 export function Section({
   title,
@@ -33,17 +32,20 @@ export function Section({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <GlassCard className="p-4" hover={false}>
+    <section className="ad-panel">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between text-left"
+        className="ad-panel-toggle"
+        aria-expanded={open}
       >
-        <h2 className="text-sm font-medium text-primary">{title}</h2>
-        <span className="text-xs text-muted">{open ? "−" : "+"}</span>
+        <h2 className="ad-panel-h">{title}</h2>
+        <span className="sg-micro" aria-hidden="true">
+          {open ? "−" : "+"}
+        </span>
       </button>
-      {open && <div className="mt-4 space-y-4">{children}</div>}
-    </GlassCard>
+      {open && <div className="ad-panel-body space-y-4">{children}</div>}
+    </section>
   );
 }
 
@@ -61,19 +63,23 @@ export function RowControls({
   length,
   onMove,
   onRemove,
+  label = "item",
 }: {
   index: number;
   length: number;
   onMove: (direction: -1 | 1) => void;
   onRemove: () => void;
+  /** What the row is, for the screen-reader names of the arrow buttons. */
+  label?: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center">
       <button
         type="button"
         onClick={() => onMove(-1)}
         disabled={index === 0}
-        className="text-xs text-muted hover:text-primary disabled:opacity-30"
+        className="ad-link"
+        aria-label={`Move ${label} up`}
       >
         ↑
       </button>
@@ -81,14 +87,16 @@ export function RowControls({
         type="button"
         onClick={() => onMove(1)}
         disabled={index === length - 1}
-        className="text-xs text-muted hover:text-primary disabled:opacity-30"
+        className="ad-link"
+        aria-label={`Move ${label} down`}
       >
         ↓
       </button>
       <button
         type="button"
         onClick={onRemove}
-        className="text-xs text-error hover:underline"
+        className="ad-link"
+        data-tone="danger"
       >
         Remove
       </button>

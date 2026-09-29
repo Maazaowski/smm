@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
 
 export function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -22,41 +21,66 @@ export function AdminLogin() {
 
       if (res.ok) {
         window.location.reload();
-      } else {
-        setError("Invalid password");
+        return;
       }
+
+      // The server distinguishes a wrong password from "not configured" and
+      // "too many attempts"; the old form flattened all three to "Invalid
+      // password", which sent someone to reset a password that was correct.
+      const data = await res.json().catch(() => ({}));
+      setError(
+        res.status === 401
+          ? "That is not the password."
+          : (data.error ?? `Sign-in failed (${res.status}).`)
+      );
     } catch {
-      setError("Something went wrong");
+      setError("Could not reach the server.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center justify-center px-6 py-32">
-      <GlassCard className="w-full p-8" hover={false}>
-        <h1 className="font-display text-2xl text-primary mb-6 text-center">
-          Admin Login
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="ad-login">
+      <div className="ad-login-box">
+        <span className="ad-wordmark">
+          <b>Maaz</b>
+          <span className="sg-micro">/ desk</span>
+        </span>
+        <form onSubmit={handleSubmit} noValidate>
+          <label className="ad-label" htmlFor="ad-password">
+            Password
+          </label>
           <input
+            id="ad-password"
+            className="ad-field ad-mono"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full rounded-xl border border-glass-border bg-surface-1 px-4 py-3 text-sm text-primary placeholder:text-muted outline-none focus:border-accent-blue transition-colors"
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (error) setError("");
+            }}
+            autoComplete="current-password"
             autoFocus
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "ad-password-err" : undefined}
+            data-invalid={error ? "true" : undefined}
           />
-          {error && <p className="text-error text-sm">{error}</p>}
+          {error && (
+            <span className="sg-error sg-mono" id="ad-password-err" role="alert">
+              {error}
+            </span>
+          )}
           <button
             type="submit"
+            className="sg-cta"
+            data-fill="true"
             disabled={loading || !password}
-            className="w-full rounded-xl bg-accent-blue px-6 py-3 text-sm font-medium text-white hover:bg-accent-purple transition-colors disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "…" : "Sign in"}
           </button>
         </form>
-      </GlassCard>
+      </div>
     </div>
   );
 }

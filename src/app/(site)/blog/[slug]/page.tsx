@@ -8,6 +8,7 @@ import { SITE } from "@/lib/constants";
 import { articleSchema, breadcrumbSchema, jsonLd } from "@/lib/structured-data";
 import { ReadingRail } from "@/components/site/reading-rail";
 import { EssayEnd } from "@/components/site/essay-end";
+import { EssayViews } from "@/components/site/essay-views";
 
 export const revalidate = 60;
 
@@ -148,6 +149,7 @@ export default async function Essay({ params }: Props) {
               <span>{essay.minutes} min</span>
               <span aria-hidden="true">·</span>
               <span>{essay.words.toLocaleString()} words</span>
+              <EssayViews slug={slug} />
             </p>
           </header>
 

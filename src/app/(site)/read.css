@@ -885,3 +885,39 @@
     gap: 22px;
   }
 }
+
+/* ---- reactions ----------------------------------------------------- */
+
+.sg-react {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: clamp(40px, 6vw, 64px);
+  padding-block: 18px 30px;
+  border-top: 1px solid var(--line);
+}
+
+.sg-react > .sg-micro {
+  margin-right: 8px;
+}
+
+.sg-react-btn {
+  padding: 6px 14px 6px 12px;
+  min-height: 32px;
+  gap: 8px;
+}
+
+.sg-react-btn em {
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sg-react-btn:disabled {
+  cursor: default;
+}
+
+.sg-react-btn:disabled::before {
+  display: none;
+}

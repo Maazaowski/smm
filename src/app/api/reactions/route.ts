@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "@/lib/redis";
+import { clientIp } from "@/lib/request";
 import type { ReactionType, Reactions } from "@/lib/types";
 
 const VALID_TYPES: ReactionType[] = ["fire", "heart", "mindblown", "idea"];
+
+/*
+ * Four kinds per essay is the honest ceiling for one reader; anything past
+ * a couple of dozen a minute from one address is a script, not a person.
+ */
+const ratelimit =
+  redis &&
+  new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, "1 m"),
+    prefix: "ratelimit:reactions",
+  });
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
@@ -29,11 +43,18 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { slug, type } = body as { slug: string; type: ReactionType };
+  const body = await request.json().catch(() => ({}));
+  const { slug, type } = body as { slug?: string; type?: ReactionType };
 
   if (!slug || !type || !VALID_TYPES.includes(type)) {
     return NextResponse.json({ error: "invalid request" }, { status: 400 });
+  }
+
+  if (ratelimit) {
+    const { success } = await ratelimit.limit(clientIp(request));
+    if (!success) {
+      return NextResponse.json({ error: "Too many reactions" }, { status: 429 });
+    }
   }
 
   if (!redis) {
