@@ -57,7 +57,7 @@ export function AdminPanel({ tab }: { tab: AdminTab }) {
   return (
     <>
       <AdminHead tab={tab} onLogout={handleLogout} />
-      <main className="sg-wrap ad-main">
+      <main className="sg-wrap dk-main">
         {tab === "posts" && (
           <PostsSection
             views={viewsBySlug}
@@ -357,13 +357,13 @@ function PostsSection({
       <>
         <SectionSlug tab="posts" fact={editSlug ? `editing /blog/${editSlug}` : "new essay"} />
 
-        <div className="ad-bar">
+        <div className="dk-bar">
           <div>
-            <h1 className="ad-title">{editSlug ? "Edit essay" : "New essay"}</h1>
+            <h1 className="dk-title">{editSlug ? "Edit essay" : "New essay"}</h1>
           </div>
-          <div className="ad-actions">
+          <div className="dk-actions">
             <DraftStatusIndicator status={draft.status} dirty={draft.dirty} />
-            <button type="button" onClick={handleCloseEditor} className="ad-link">
+            <button type="button" onClick={handleCloseEditor} className="dk-link">
               ← Back to essays
             </button>
           </div>
@@ -394,7 +394,7 @@ function PostsSection({
 
         <Notice notice={notice} onDismiss={() => setNotice(null)} />
 
-        <div className="ad-editor">
+        <div className="dk-editor">
           <div className="space-y-4">
             <div>
               <label className={labelClass} htmlFor="post-title">
@@ -408,7 +408,7 @@ function PostsSection({
                 className={inputClass}
               />
               {!editSlug && title && (
-                <span className="ad-help sg-mono">/blog/{previewSlug}</span>
+                <span className="dk-help sg-mono">/blog/{previewSlug}</span>
               )}
             </div>
 
@@ -425,7 +425,7 @@ function PostsSection({
               />
             </div>
 
-            <div className="ad-grid-2">
+            <div className="dk-grid-2">
               <div>
                 <label className={labelClass} htmlFor="post-category">
                   Category
@@ -457,7 +457,7 @@ function PostsSection({
               </div>
             </div>
 
-            <label className="ad-check">
+            <label className="dk-check">
               <input
                 type="checkbox"
                 checked={isDraft}
@@ -475,13 +475,13 @@ function PostsSection({
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="## headings become the contents rail. ```mermaid blocks become diagrams."
-                className={`${textareaClass} ad-mono`}
+                className={`${textareaClass} dk-mono`}
                 style={{ minHeight: 480 }}
                 spellCheck
               />
             </div>
 
-            <div className="ad-actions">
+            <div className="dk-actions">
               <button
                 type="button"
                 onClick={handleSave}
@@ -495,12 +495,12 @@ function PostsSection({
             </div>
           </div>
 
-          <aside className="ad-panel" aria-label="Preview">
-            <h2 className="ad-panel-h">Preview</h2>
-            <div className="ad-panel-body">
-              <p className="ad-preview-t">{title || "Untitled"}</p>
-              <p className="ad-preview-d">{description || "No dek yet."}</p>
-              <div className="ad-preview">{body || "Start writing…"}</div>
+          <aside className="dk-panel" aria-label="Preview">
+            <h2 className="dk-panel-h">Preview</h2>
+            <div className="dk-panel-body">
+              <p className="dk-preview-t">{title || "Untitled"}</p>
+              <p className="dk-preview-d">{description || "No dek yet."}</p>
+              <div className="dk-preview">{body || "Start writing…"}</div>
             </div>
           </aside>
         </div>
@@ -521,15 +521,15 @@ function PostsSection({
         }
       />
 
-      <div className="ad-bar">
+      <div className="dk-bar">
         <div>
-          <h1 className="ad-title">What I got wrong first</h1>
+          <h1 className="dk-title">What I got wrong first</h1>
           <p>
             Publishing puts an essay on the site, in the feed and in the sitemap.
             Subscribers are emailed by hand, from the row, once.
           </p>
         </div>
-        <div className="ad-actions">
+        <div className="dk-actions">
           <button type="button" onClick={handleNew} className="sg-cta" data-fill="true">
             New essay
           </button>
@@ -539,10 +539,10 @@ function PostsSection({
       <Notice notice={notice} onDismiss={() => setNotice(null)} />
 
       {loadError ? (
-        <div className="ad-notice" data-tone="bad" role="alert">
+        <div className="dk-notice" data-tone="bad" role="alert">
           <span>{loadError}</span>
-          <span className="ad-notice-actions">
-            <button type="button" className="ad-link" onClick={fetchPosts}>
+          <span className="dk-notice-actions">
+            <button type="button" className="dk-link" onClick={fetchPosts}>
               Retry
             </button>
           </span>
@@ -550,57 +550,57 @@ function PostsSection({
       ) : loading ? (
         <Skeleton rows={4} />
       ) : posts.length === 0 ? (
-        <div className="ad-empty">No essays yet. The first one is the hardest.</div>
+        <div className="dk-empty">No essays yet. The first one is the hardest.</div>
       ) : (
-        <div className="ad-rows">
+        <div className="dk-rows">
           {posts.map((post) => {
             const v = views.get(post.slug);
             return (
-              <article key={post.slug} className="ad-row">
-                <span className="ad-row-r">{post.date}</span>
+              <article key={post.slug} className="dk-row">
+                <span className="dk-row-r">{post.date}</span>
 
                 <div className="min-w-0">
-                  <h3 className="ad-row-t">{post.title}</h3>
-                  <div className="ad-row-meta">
-                    <span className="ad-row-r">{post.category}</span>
+                  <h3 className="dk-row-t">{post.title}</h3>
+                  <div className="dk-row-meta">
+                    <span className="dk-row-r">{post.category}</span>
                     {post.draft ? <Tag tone="draft">Draft</Tag> : <Tag tone="live">Live</Tag>}
                     {post.notified && <Tag>Sent to subscribers</Tag>}
                   </div>
                 </div>
 
-                <div className="ad-row-actions">
-                  <span className="ad-fig" title="Deduplicated views, all time">
-                    <span className="ad-fig-v">
+                <div className="dk-row-actions">
+                  <span className="dk-fig" title="Deduplicated views, all time">
+                    <span className="dk-fig-v">
                       {viewsReady ? (v ?? 0).toLocaleString() : "–"}
                     </span>
-                    <span className="ad-fig-k">views</span>
+                    <span className="dk-fig-k">views</span>
                   </span>
                   {!post.draft && !post.notified && (
                     <button
                       type="button"
                       onClick={() => askNotify(post)}
                       disabled={sendingSlug === post.slug}
-                      className="ad-link"
+                      className="dk-link"
                       title="Email this essay to your subscribers"
                     >
                       {sendingSlug === post.slug ? "Sending…" : "Send"}
                     </button>
                   )}
-                  <button type="button" onClick={() => handleEdit(post.slug)} className="ad-link">
+                  <button type="button" onClick={() => handleEdit(post.slug)} className="dk-link">
                     Edit
                   </button>
                   <a
                     href={`/blog/${post.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ad-link"
+                    className="dk-link"
                   >
                     View ↗
                   </a>
                   <button
                     type="button"
                     onClick={() => askDelete(post)}
-                    className="ad-link"
+                    className="dk-link"
                     data-tone="danger"
                   >
                     Delete

@@ -10,6 +10,12 @@
  *   1. Black and white. The only colour is state — cyan for live/ok, amber for
  *      warn, red for destructive — never decoration.
  *   2. Mono micro labels do the labelling; the display face does the headings.
+ *
+ * Classes are prefixed `dk-` (desk). They used to be `ad-`, and EasyList, the
+ * default list behind uBlock Origin, AdBlock and Brave Shields, carries generic
+ * hide rules for `.ad-label`, `.ad-field`, `.ad-panel` and a dozen more, so
+ * the password field vanished the moment a blocker's cosmetic filter ran.
+ * Keep the prefix clear of anything that reads as advertising.
  */
 
 .sg-admin {
@@ -47,7 +53,7 @@
    HEAD — the desk bar
    ======================================================================== */
 
-.ad-head {
+.dk-head {
   position: sticky;
   top: 0;
   z-index: 60;
@@ -61,8 +67,8 @@
   border-bottom: 1px solid var(--line);
 }
 
-.ad-head-l,
-.ad-head-r {
+.dk-head-l,
+.dk-head-r {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -70,18 +76,18 @@
   min-width: 0;
 }
 
-.ad-head-r {
+.dk-head-r {
   justify-content: flex-end;
 }
 
-.ad-wordmark {
+.dk-wordmark {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
   white-space: nowrap;
 }
 
-.ad-wordmark b {
+.dk-wordmark b {
   font-family: var(--display);
   font-weight: 600;
   font-size: 15px;
@@ -90,18 +96,18 @@
   color: var(--white);
 }
 
-.ad-tabs {
+.dk-tabs {
   display: flex;
   gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.ad-tabs::-webkit-scrollbar {
+.dk-tabs::-webkit-scrollbar {
   display: none;
 }
 
-.ad-tab {
+.dk-tab {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -116,15 +122,15 @@
   transition: color 0.2s var(--ease);
 }
 
-.ad-tab:hover {
+.dk-tab:hover {
   color: var(--white);
 }
 
-.ad-tab[data-current="true"] {
+.dk-tab[data-current="true"] {
   color: var(--white);
 }
 
-.ad-tab[data-current="true"]::after {
+.dk-tab[data-current="true"]::after {
   content: "";
   position: absolute;
   left: 12px;
@@ -134,37 +140,37 @@
   background: var(--white);
 }
 
-.ad-head .sg-clock {
+.dk-head .sg-clock {
   white-space: nowrap;
 }
 
 @media (max-width: 900px) {
-  .ad-head {
+  .dk-head {
     flex-wrap: wrap;
     padding-bottom: 0;
   }
-  .ad-head-l {
+  .dk-head-l {
     order: 1;
     flex: 1 1 auto;
   }
-  .ad-head-r {
+  .dk-head-r {
     order: 2;
     flex: 0 0 auto;
   }
-  .ad-tabs {
+  .dk-tabs {
     order: 3;
     flex-basis: 100%;
     margin-top: 6px;
     padding-bottom: 10px;
   }
-  .ad-tab[data-current="true"]::after {
+  .dk-tab[data-current="true"]::after {
     bottom: 0;
   }
 }
 
 /* The clock is a nicety; at phone width it fights the buttons for the row. */
 @media (max-width: 560px) {
-  .ad-head .sg-clock {
+  .dk-head .sg-clock {
     display: none;
   }
 }
@@ -173,15 +179,15 @@
    PAGE
    ======================================================================== */
 
-.ad-main {
+.dk-main {
   padding-block: clamp(28px, 4vw, 48px) clamp(64px, 8vw, 120px);
 }
 
-.ad-main .sg-slug {
+.dk-main .sg-slug {
   margin-bottom: clamp(22px, 3vw, 36px);
 }
 
-.ad-title {
+.dk-title {
   font-family: var(--display);
   font-weight: 600;
   font-size: clamp(26px, 3.6vw, 44px);
@@ -193,7 +199,7 @@
   text-wrap: balance;
 }
 
-.ad-bar {
+.dk-bar {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -202,7 +208,7 @@
   margin-bottom: clamp(22px, 3vw, 36px);
 }
 
-.ad-bar p {
+.dk-bar p {
   margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.55;
@@ -210,7 +216,7 @@
   max-width: 60ch;
 }
 
-.ad-actions {
+.dk-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -222,7 +228,7 @@
    ======================================================================== */
 
 /* A text action: mono micro, dim → white. The row-level verbs. */
-.ad-link {
+.dk-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -240,23 +246,23 @@
   transition: color 0.2s var(--ease);
 }
 
-.ad-link:hover {
+.dk-link:hover {
   color: var(--white);
 }
 
-.ad-link[data-tone="danger"] {
+.dk-link[data-tone="danger"] {
   color: var(--faint);
 }
 
-.ad-link[data-tone="danger"]:hover {
+.dk-link[data-tone="danger"]:hover {
   color: var(--bad);
 }
 
-.ad-link[data-tone="live"] {
+.dk-link[data-tone="live"] {
   color: var(--signal);
 }
 
-.ad-link:disabled {
+.dk-link:disabled {
   opacity: 0.35;
   cursor: default;
   color: var(--dim);
@@ -294,7 +300,7 @@
 }
 
 /* Fields — the same field the essay-end subscribe form uses, made block. */
-.ad-field {
+.dk-field {
   display: block;
   width: 100%;
   font-family: var(--body);
@@ -309,36 +315,36 @@
   transition: border-color 0.2s var(--ease);
 }
 
-.ad-field::placeholder {
+.dk-field::placeholder {
   color: var(--faint);
 }
 
-.ad-field:focus {
+.dk-field:focus {
   outline: none;
   border-color: var(--edge);
 }
 
-.ad-field:disabled {
+.dk-field:disabled {
   opacity: 0.5;
 }
 
-.ad-field[data-invalid="true"] {
+.dk-field[data-invalid="true"] {
   border-color: var(--bad);
 }
 
-.ad-textarea {
+.dk-textarea {
   resize: vertical;
   min-height: 96px;
 }
 
-.ad-mono {
+.dk-mono {
   font-family: var(--mono);
   font-size: 12.5px;
   letter-spacing: 0.01em;
   line-height: 1.6;
 }
 
-.ad-select {
+.dk-select {
   appearance: none;
   padding-right: 34px;
   background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
@@ -352,12 +358,12 @@
   background-repeat: no-repeat;
 }
 
-.ad-select option {
+.dk-select option {
   background: var(--raise);
   color: var(--white);
 }
 
-.ad-label {
+.dk-label {
   display: block;
   font-family: var(--mono);
   font-size: 10px;
@@ -367,7 +373,7 @@
   margin-bottom: 6px;
 }
 
-.ad-help {
+.dk-help {
   display: block;
   margin-top: 6px;
   font-size: 12.5px;
@@ -375,7 +381,7 @@
   color: var(--faint);
 }
 
-.ad-check {
+.dk-check {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -388,7 +394,7 @@
   min-height: 26px;
 }
 
-.ad-check input {
+.dk-check input {
   appearance: none;
   width: 14px;
   height: 14px;
@@ -399,7 +405,7 @@
   cursor: pointer;
 }
 
-.ad-check input::before {
+.dk-check input::before {
   content: "";
   width: 6px;
   height: 6px;
@@ -408,7 +414,7 @@
   transition: transform 0.15s var(--ease);
 }
 
-.ad-check input:checked::before {
+.dk-check input:checked::before {
   transform: scale(1);
 }
 
@@ -416,17 +422,17 @@
    PANELS & SUB-PANELS
    ======================================================================== */
 
-.ad-panel {
+.dk-panel {
   border: 1px solid var(--line);
   background: var(--near);
   padding: clamp(16px, 2vw, 22px);
 }
 
-.ad-panel + .ad-panel {
+.dk-panel + .dk-panel {
   margin-top: 12px;
 }
 
-.ad-panel-toggle {
+.dk-panel-toggle {
   display: flex;
   width: 100%;
   align-items: center;
@@ -440,7 +446,7 @@
   color: inherit;
 }
 
-.ad-panel-h {
+.dk-panel-h {
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -449,17 +455,17 @@
   margin: 0;
 }
 
-.ad-panel-body {
+.dk-panel-body {
   margin-top: 16px;
 }
 
-.ad-sub {
+.dk-sub {
   border: 1px solid var(--line-2);
   background: var(--void);
   padding: 14px;
 }
 
-.ad-sub-head {
+.dk-sub-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -467,27 +473,27 @@
   margin-bottom: 10px;
 }
 
-.ad-grid-2 {
+.dk-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.ad-grid-3 {
+.dk-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 @media (max-width: 640px) {
-  .ad-grid-2,
-  .ad-grid-3 {
+  .dk-grid-2,
+  .dk-grid-3 {
     grid-template-columns: 1fr;
   }
 }
 
 /* Editor layout: fields on the left, preview and read-only data on the right. */
-.ad-editor {
+.dk-editor {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: clamp(18px, 3vw, 36px);
@@ -495,12 +501,12 @@
 }
 
 @media (max-width: 1000px) {
-  .ad-editor {
+  .dk-editor {
     grid-template-columns: 1fr;
   }
 }
 
-.ad-preview {
+.dk-preview {
   font-family: var(--mono);
   font-size: 12px;
   line-height: 1.65;
@@ -514,7 +520,7 @@
   padding: 14px;
 }
 
-.ad-preview-t {
+.dk-preview-t {
   font-family: var(--display);
   font-weight: 600;
   font-size: 22px;
@@ -525,7 +531,7 @@
   margin: 0 0 8px;
 }
 
-.ad-preview-d {
+.dk-preview-d {
   margin: 0 0 14px;
   font-size: 14px;
   color: var(--text);
@@ -535,11 +541,11 @@
    ROWS — the lists
    ======================================================================== */
 
-.ad-rows {
+.dk-rows {
   border-top: 1px solid var(--line);
 }
 
-.ad-row {
+.dk-row {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
   gap: 18px;
@@ -550,11 +556,11 @@
   transition: background-color 0.25s var(--ease);
 }
 
-.ad-row:hover {
+.dk-row:hover {
   background: var(--near);
 }
 
-.ad-row-r {
+.dk-row-r {
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -563,7 +569,7 @@
   white-space: nowrap;
 }
 
-.ad-row-t {
+.dk-row-t {
   font-family: var(--display);
   font-weight: 600;
   font-size: clamp(16px, 1.6vw, 20px);
@@ -575,14 +581,14 @@
   overflow-wrap: anywhere;
 }
 
-.ad-row-d {
+.dk-row-d {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
   color: var(--dim);
 }
 
-.ad-row-meta {
+.dk-row-meta {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -590,7 +596,7 @@
   margin-top: 6px;
 }
 
-.ad-row-actions {
+.dk-row-actions {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -599,17 +605,17 @@
 }
 
 @media (max-width: 760px) {
-  .ad-row {
+  .dk-row {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  .ad-row-actions {
+  .dk-row-actions {
     justify-content: flex-start;
   }
 }
 
 /* Status tags: mono micro with a hairline. Only "live" carries colour. */
-.ad-tag {
+.dk-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -623,28 +629,28 @@
   white-space: nowrap;
 }
 
-.ad-tag[data-tone="live"] {
+.dk-tag[data-tone="live"] {
   color: var(--signal);
   border-color: rgba(63, 215, 232, 0.35);
 }
 
-.ad-tag[data-tone="draft"] {
+.dk-tag[data-tone="draft"] {
   color: var(--faint);
   border-style: dashed;
 }
 
-.ad-tag[data-tone="warn"] {
+.dk-tag[data-tone="warn"] {
   color: var(--warn);
   border-color: rgba(232, 176, 79, 0.35);
 }
 
-.ad-tag[data-tone="bad"] {
+.dk-tag[data-tone="bad"] {
   color: var(--bad);
   border-color: rgba(240, 101, 95, 0.35);
 }
 
 /* Per-row figure: a number with a micro label under it. */
-.ad-fig {
+.dk-fig {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -652,14 +658,14 @@
   min-width: 56px;
 }
 
-.ad-fig-v {
+.dk-fig-v {
   font-family: var(--mono);
   font-size: 13px;
   color: var(--white);
   font-variant-numeric: tabular-nums;
 }
 
-.ad-fig-k {
+.dk-fig-k {
   font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.14em;
@@ -668,7 +674,7 @@
 }
 
 @media (max-width: 760px) {
-  .ad-fig {
+  .dk-fig {
     align-items: flex-start;
   }
 }
@@ -677,7 +683,7 @@
    NOTICES, EMPTY STATES, SKELETONS
    ======================================================================== */
 
-.ad-notice {
+.dk-notice {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -692,26 +698,26 @@
   color: var(--text);
 }
 
-.ad-notice[data-tone="ok"] {
+.dk-notice[data-tone="ok"] {
   border-left-color: var(--signal);
 }
 
-.ad-notice[data-tone="warn"] {
+.dk-notice[data-tone="warn"] {
   border-left-color: var(--warn);
 }
 
-.ad-notice[data-tone="bad"] {
+.dk-notice[data-tone="bad"] {
   border-left-color: var(--bad);
   color: var(--bad);
 }
 
-.ad-notice-actions {
+.dk-notice-actions {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.ad-empty {
+.dk-empty {
   border: 1px dashed var(--edge);
   padding: clamp(24px, 4vw, 44px);
   font-size: 14.5px;
@@ -720,15 +726,15 @@
   max-width: 62ch;
 }
 
-.ad-skeleton {
+.dk-skeleton {
   height: 62px;
   border-bottom: 1px solid var(--line);
   background: linear-gradient(90deg, var(--void) 25%, var(--near) 50%, var(--void) 75%);
   background-size: 200% 100%;
-  animation: ad-shimmer 1.4s ease-in-out infinite;
+  animation: dk-shimmer 1.4s ease-in-out infinite;
 }
 
-@keyframes ad-shimmer {
+@keyframes dk-shimmer {
   0% {
     background-position: -200% 0;
   }
@@ -741,19 +747,19 @@
    ANALYTICS
    ======================================================================== */
 
-.ad-stats {
+.dk-stats {
   margin-bottom: clamp(22px, 3vw, 36px);
 }
 
-.ad-stats .sg-stat-v {
+.dk-stats .sg-stat-v {
   font-size: clamp(30px, 3.4vw, 48px);
 }
 
-.ad-chart {
+.dk-chart {
   margin-bottom: clamp(22px, 3vw, 36px);
 }
 
-.ad-chart-head {
+.dk-chart-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -762,13 +768,13 @@
   margin-bottom: 14px;
 }
 
-.ad-table {
+.dk-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
 }
 
-.ad-table th {
+.dk-table th {
   text-align: left;
   font-family: var(--mono);
   font-size: 9.5px;
@@ -781,18 +787,18 @@
   white-space: nowrap;
 }
 
-.ad-table td {
+.dk-table td {
   padding: 11px 8px;
   border-bottom: 1px solid var(--line-2);
   color: var(--text);
   vertical-align: middle;
 }
 
-.ad-table tr:last-child td {
+.dk-table tr:last-child td {
   border-bottom: 0;
 }
 
-.ad-table .num {
+.dk-table .num {
   text-align: right;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
@@ -800,15 +806,15 @@
   white-space: nowrap;
 }
 
-.ad-table .num[data-zero="true"] {
+.dk-table .num[data-zero="true"] {
   color: var(--faint);
 }
 
-.ad-table a:hover {
+.dk-table a:hover {
   color: var(--white);
 }
 
-.ad-table-wrap {
+.dk-table-wrap {
   overflow-x: auto;
 }
 
@@ -816,14 +822,14 @@
    LOGIN
    ======================================================================== */
 
-.ad-login {
+.dk-login {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: var(--gut);
 }
 
-.ad-login-box {
+.dk-login-box {
   width: 100%;
   max-width: 380px;
   border: 1px solid var(--line);
@@ -831,7 +837,7 @@
   padding: clamp(24px, 4vw, 36px);
 }
 
-.ad-login-box form {
+.dk-login-box form {
   display: flex;
   flex-direction: column;
   gap: 12px;
