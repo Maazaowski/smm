@@ -46,3 +46,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /e2e/screenshots/
+
+# Essay images uploaded in development (production uses Vercel Blob)
+/public/uploads/

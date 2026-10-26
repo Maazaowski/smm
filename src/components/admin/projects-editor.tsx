@@ -207,31 +207,31 @@ export function ProjectsEditor() {
   if (showEditor) {
     return (
       <div>
-        <div className="ad-bar">
+        <div className="dk-bar">
           <div>
-            <h1 className="ad-title">{editSlug ? "Edit project" : "New project"}</h1>
+            <h1 className="dk-title">{editSlug ? "Edit project" : "New project"}</h1>
           </div>
           <button
             type="button"
             onClick={() => setShowEditor(false)}
-            className="ad-link"
+            className="dk-link"
           >
             ← Back to work
           </button>
         </div>
 
         {notice && (
-          <div className="ad-notice" data-tone={notice.tone} role="status">
+          <div className="dk-notice" data-tone={notice.tone} role="status">
             <span>{notice.text}</span>
-            <span className="ad-notice-actions">
-              <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+            <span className="dk-notice-actions">
+              <button type="button" className="dk-link" onClick={() => setNotice(null)}>
                 Dismiss
               </button>
             </span>
           </div>
         )}
 
-        <div className="ad-editor">
+        <div className="dk-editor">
           {/* Fields */}
           <div className="space-y-4">
             <div>
@@ -283,7 +283,7 @@ export function ProjectsEditor() {
               />
             </div>
 
-            <div className="ad-grid-2">
+            <div className="dk-grid-2">
               <div>
                 <label className={labelClass}>Category</label>
                 <select
@@ -316,7 +316,7 @@ export function ProjectsEditor() {
               </div>
             </div>
 
-            <div className="ad-grid-2">
+            <div className="dk-grid-2">
               <div>
                 <label className={labelClass}>Kind</label>
                 <select
@@ -356,7 +356,7 @@ export function ProjectsEditor() {
               </div>
             )}
 
-            <div className="ad-grid-2">
+            <div className="dk-grid-2">
               <div>
                 <label className={labelClass}>Repo owner</label>
                 <input
@@ -378,7 +378,7 @@ export function ProjectsEditor() {
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
-              <label className="ad-check">
+              <label className="dk-check">
                 <input
                   type="checkbox"
                   checked={draft.featured}
@@ -386,7 +386,7 @@ export function ProjectsEditor() {
                 />
                 Featured
               </label>
-              <label className="ad-check">
+              <label className="dk-check">
                 <input
                   type="checkbox"
                   checked={draft.draft}
@@ -394,7 +394,7 @@ export function ProjectsEditor() {
                 />
                 Draft
               </label>
-              <label className="ad-check">
+              <label className="dk-check">
                 Order
                 <input
                   type="number"
@@ -402,7 +402,7 @@ export function ProjectsEditor() {
                   onChange={(e) =>
                     patch({ sortOrder: Number(e.target.value) || 0 })
                   }
-                  className={`${inputClass} ad-mono w-20`}
+                  className={`${inputClass} dk-mono w-20`}
                   style={{ minHeight: 32, padding: "4px 8px" }}
                 />
               </label>
@@ -446,7 +446,7 @@ export function ProjectsEditor() {
                 value={draft.body}
                 onChange={(e) => patch({ body: e.target.value })}
                 placeholder="Write the case study in MDX. ## headings become the table of contents."
-                className={`${textareaClass} ad-mono`}
+                className={`${textareaClass} dk-mono`}
                 style={{ minHeight: 420 }}
               />
             </div>
@@ -464,22 +464,22 @@ export function ProjectsEditor() {
 
           {/* Preview + synced stats */}
           <div>
-            <aside className="ad-panel" aria-label="Preview">
-              <h2 className="ad-panel-h">Preview</h2>
-              <div className="ad-panel-body">
-                <p className="ad-preview-t">{draft.title || "Untitled"}</p>
-                <p className="ad-preview-d">{draft.summary || "No summary yet."}</p>
-                <div className="ad-preview">{draft.body || "Start writing…"}</div>
+            <aside className="dk-panel" aria-label="Preview">
+              <h2 className="dk-panel-h">Preview</h2>
+              <div className="dk-panel-body">
+                <p className="dk-preview-t">{draft.title || "Untitled"}</p>
+                <p className="dk-preview-d">{draft.summary || "No summary yet."}</p>
+                <div className="dk-preview">{draft.body || "Start writing…"}</div>
               </div>
             </aside>
 
-            <aside className="ad-panel" aria-label="Synced from GitHub">
-              <h2 className="ad-panel-h">Synced from GitHub · read-only</h2>
-              <div className="ad-panel-body">
+            <aside className="dk-panel" aria-label="Synced from GitHub">
+              <h2 className="dk-panel-h">Synced from GitHub · read-only</h2>
+              <div className="dk-panel-body">
                 {stats ? (
                   <>
                     {stats.visibility === "private" && (
-                      <div className="ad-notice" data-tone="warn" role="note">
+                      <div className="dk-notice" data-tone="warn" role="note">
                         <span>
                           Private repo — repo URL, branch, topics and releases
                           are redacted at sync time. Everything below is what
@@ -487,10 +487,10 @@ export function ProjectsEditor() {
                         </span>
                       </div>
                     )}
-                    <pre className="ad-preview">{JSON.stringify(stats, null, 2)}</pre>
+                    <pre className="dk-preview">{JSON.stringify(stats, null, 2)}</pre>
                   </>
                 ) : (
-                  <p className="ad-help" style={{ margin: 0 }}>
+                  <p className="dk-help" style={{ margin: 0 }}>
                     No stats yet. Set a repo owner and name, save, then press
                     &ldquo;Sync now&rdquo; on the work list.
                   </p>
@@ -507,16 +507,16 @@ export function ProjectsEditor() {
 
   return (
     <div>
-      <div className="ad-bar">
+      <div className="dk-bar">
         <div>
-          <h1 className="ad-title">Things that are running</h1>
+          <h1 className="dk-title">Things that are running</h1>
           <p>
             {rows.length} project{rows.length === 1 ? "" : "s"}. A full sync
             takes 10–30 seconds; GitHub warms its activity stats on first
             request.
           </p>
         </div>
-        <div className="ad-actions">
+        <div className="dk-actions">
           <button
             type="button"
             onClick={handleSync}
@@ -532,10 +532,10 @@ export function ProjectsEditor() {
       </div>
 
       {notice && (
-        <div className="ad-notice" data-tone={notice.tone} role="status">
+        <div className="dk-notice" data-tone={notice.tone} role="status">
           <span>{notice.text}</span>
-          <span className="ad-notice-actions">
-            <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+          <span className="dk-notice-actions">
+            <button type="button" className="dk-link" onClick={() => setNotice(null)}>
               Dismiss
             </button>
           </span>
@@ -543,7 +543,7 @@ export function ProjectsEditor() {
       )}
 
       {tokenError && (
-        <div className="ad-notice" data-tone="bad" role="alert">
+        <div className="dk-notice" data-tone="bad" role="alert">
           <span>
             GitHub token invalid or expired. Check{" "}
             <code className="sg-mono">GITHUB_SYNC_TOKEN</code>.
@@ -552,7 +552,7 @@ export function ProjectsEditor() {
       )}
 
       {syncResults && (
-        <div className="ad-notice" data-tone="info" role="status">
+        <div className="dk-notice" data-tone="info" role="status">
           <div>
             {syncResults.length === 0 ? (
               <span>No projects have a repo configured.</span>
@@ -573,13 +573,13 @@ export function ProjectsEditor() {
                     {r.status === "ok" ? "✓" : r.status === "partial" ? "!" : "✗"}
                   </span>
                   <span className="sg-mono">{r.slug}</span>
-                  {r.error && <span className="ad-help" style={{ margin: 0 }}>{r.error}</span>}
+                  {r.error && <span className="dk-help" style={{ margin: 0 }}>{r.error}</span>}
                 </p>
               ))
             )}
           </div>
-          <span className="ad-notice-actions">
-            <button type="button" className="ad-link" onClick={() => setSyncResults(null)}>
+          <span className="dk-notice-actions">
+            <button type="button" className="dk-link" onClick={() => setSyncResults(null)}>
               Dismiss
             </button>
           </span>
@@ -587,24 +587,24 @@ export function ProjectsEditor() {
       )}
 
       {loading ? (
-        <div className="ad-rows" aria-hidden="true">
+        <div className="dk-rows" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="ad-skeleton" />
+            <div key={i} className="dk-skeleton" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="ad-empty">No projects yet.</div>
+        <div className="dk-empty">No projects yet.</div>
       ) : (
-        <div className="ad-rows">
+        <div className="dk-rows">
           {rows.map((row) => (
             <article
               key={row.slug}
-              className="ad-row"
+              className="dk-row"
               style={{ gridTemplateColumns: "72px minmax(0, 1fr) auto" }}
             >
-              <span className="ad-row-r">{row.year || "—"}</span>
+              <span className="dk-row-r">{row.year || "—"}</span>
               <div className="min-w-0">
-                <h3 className="ad-row-t">
+                <h3 className="dk-row-t">
                   {row.title}
                   {row.featured && (
                     <span className="sg-micro" style={{ marginLeft: 8 }} title="Featured">
@@ -612,8 +612,8 @@ export function ProjectsEditor() {
                     </span>
                   )}
                 </h3>
-                <div className="ad-row-meta">
-                  <span className="ad-row-r">
+                <div className="dk-row-meta">
+                  <span className="dk-row-r">
                     {row.slug} · {row.category}
                   </span>
                   <Tag>{STATUS_LABELS[row.status]}</Tag>
@@ -637,22 +637,22 @@ export function ProjectsEditor() {
                 </div>
               </div>
 
-              <div className="ad-row-actions">
-                <button type="button" onClick={() => handleEdit(row.slug)} className="ad-link">
+              <div className="dk-row-actions">
+                <button type="button" onClick={() => handleEdit(row.slug)} className="dk-link">
                   Edit
                 </button>
                 <a
                   href={`/projects/${row.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ad-link"
+                  className="dk-link"
                 >
                   View ↗
                 </a>
                 <button
                   type="button"
                   onClick={() => handleDelete(row.slug)}
-                  className="ad-link"
+                  className="dk-link"
                   data-tone="danger"
                 >
                   Delete
@@ -677,12 +677,12 @@ function OutcomesEditor({
 }) {
   return (
     <div>
-      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
+      <div className="dk-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Outcomes</label>
         <button
           type="button"
           onClick={() => onChange([...outcomes, ""])}
-          className="ad-link"
+          className="dk-link"
         >
           + Add
         </button>
@@ -724,12 +724,12 @@ function LinksEditor({
 
   return (
     <div>
-      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
+      <div className="dk-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Links</label>
         <button
           type="button"
           onClick={() => onChange([...links, { label: "", href: "https://" }])}
-          className="ad-link"
+          className="dk-link"
         >
           + Add
         </button>
@@ -775,7 +775,7 @@ function GalleryEditor({
 
   return (
     <div>
-      <div className="ad-sub-head" style={{ marginBottom: 6 }}>
+      <div className="dk-sub-head" style={{ marginBottom: 6 }}>
         <label className={labelClass}>Screenshots</label>
         <button
           type="button"
@@ -785,13 +785,13 @@ function GalleryEditor({
               { src: "/images/projects/", alt: "", width: 1600, height: 1000 },
             ])
           }
-          className="ad-link"
+          className="dk-link"
         >
           + Add
         </button>
       </div>
       {gallery.length > 0 && (
-        <p className="ad-help" style={{ margin: "0 0 8px" }}>
+        <p className="dk-help" style={{ margin: "0 0 8px" }}>
           Commit the file under <code className="sg-mono">public/</code> first;
           remote URLs are rejected.
         </p>
@@ -800,7 +800,7 @@ function GalleryEditor({
         {gallery.map((g, i) => (
           <div
             key={i}
-            className="ad-sub space-y-2"
+            className="dk-sub space-y-2"
           >
             <div className="flex items-center gap-2">
               <input
@@ -837,14 +837,14 @@ function GalleryEditor({
                 value={g.width}
                 onChange={(e) => update(i, { width: Number(e.target.value) || 0 })}
                 placeholder="Width"
-                className={`${inputClass} ad-mono w-24`}
+                className={`${inputClass} dk-mono w-24`}
               />
               <input
                 type="number"
                 value={g.height}
                 onChange={(e) => update(i, { height: Number(e.target.value) || 0 })}
                 placeholder="Height"
-                className={`${inputClass} ad-mono w-24`}
+                className={`${inputClass} dk-mono w-24`}
               />
             </div>
           </div>

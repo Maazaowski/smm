@@ -233,9 +233,9 @@ export function AboutEditor() {
 
   if (loading) {
     return (
-      <div className="ad-rows" aria-hidden="true">
+      <div className="dk-rows" aria-hidden="true">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="ad-skeleton" />
+          <div key={i} className="dk-skeleton" />
         ))}
       </div>
     );
@@ -243,16 +243,16 @@ export function AboutEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="ad-bar">
+      <div className="dk-bar">
         <div>
-          <h1 className="ad-title">About, in my words</h1>
+          <h1 className="dk-title">About, in my words</h1>
           <p>
             Everything on /about except the layout. Saving publishes it
             {updatedAt ? ` — last saved ${new Date(updatedAt).toLocaleString()}.` : "."}
           </p>
         </div>
-        <div className="ad-actions">
-          <a href="/about" target="_blank" rel="noopener noreferrer" className="ad-link">
+        <div className="dk-actions">
+          <a href="/about" target="_blank" rel="noopener noreferrer" className="dk-link">
             View page ↗
           </a>
           <button
@@ -268,10 +268,10 @@ export function AboutEditor() {
       </div>
 
       {notice && (
-        <div className="ad-notice" data-tone={notice.tone} role="status">
+        <div className="dk-notice" data-tone={notice.tone} role="status">
           <span>{notice.text}</span>
-          <span className="ad-notice-actions">
-            <button type="button" className="ad-link" onClick={() => setNotice(null)}>
+          <span className="dk-notice-actions">
+            <button type="button" className="dk-link" onClick={() => setNotice(null)}>
               Dismiss
             </button>
           </span>
@@ -292,7 +292,7 @@ export function AboutEditor() {
               type="button"
               onClick={() => removeBio(i)}
               disabled={content.bio.length <= 1}
-              className="ad-link"
+              className="dk-link"
               data-tone="danger"
             >
               Remove
@@ -302,7 +302,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addBio}
-          className="ad-link"
+          className="dk-link"
         >
           + Add paragraph
         </button>
@@ -339,7 +339,7 @@ export function AboutEditor() {
       </Section>
 
       <Section title="Education">
-        <div className="ad-grid-2">
+        <div className="dk-grid-2">
           <div>
             <label className={labelClass}>Degree</label>
             <input
@@ -415,9 +415,9 @@ export function AboutEditor() {
         {content.certificates.map((cert, i) => (
           <div
             key={i}
-            className="ad-sub space-y-3"
+            className="dk-sub space-y-3"
           >
-            <div className="ad-sub-head">
+            <div className="dk-sub-head">
               <span className="sg-micro">Certificate {i + 1}</span>
               <div className="flex items-center">
                 <button
@@ -429,7 +429,7 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === 0}
-                  className="ad-link"
+                  className="dk-link"
                 >
                   Up
                 </button>
@@ -442,14 +442,14 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === content.certificates.length - 1}
-                  className="ad-link"
+                  className="dk-link"
                 >
                   Down
                 </button>
                 <button
                   type="button"
                   onClick={() => removeCertificate(i)}
-                  className="ad-link"
+                  className="dk-link"
                   data-tone="danger"
                 >
                   Remove
@@ -485,7 +485,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addCertificate}
-          className="ad-link"
+          className="dk-link"
         >
           + Add certificate
         </button>
@@ -495,9 +495,9 @@ export function AboutEditor() {
         {content.timeline.map((entry, i) => (
           <div
             key={i}
-            className="ad-sub space-y-3"
+            className="dk-sub space-y-3"
           >
-            <div className="ad-sub-head">
+            <div className="dk-sub-head">
               <span className="sg-micro">Role {i + 1}</span>
               <div className="flex items-center">
                 <button
@@ -509,7 +509,7 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === 0}
-                  className="ad-link"
+                  className="dk-link"
                 >
                   Up
                 </button>
@@ -522,21 +522,21 @@ export function AboutEditor() {
                     }))
                   }
                   disabled={i === content.timeline.length - 1}
-                  className="ad-link"
+                  className="dk-link"
                 >
                   Down
                 </button>
                 <button
                   type="button"
                   onClick={() => removeTimeline(i)}
-                  className="ad-link"
+                  className="dk-link"
                   data-tone="danger"
                 >
                   Remove
                 </button>
               </div>
             </div>
-            <div className="ad-grid-2">
+            <div className="dk-grid-2">
               <input
                 value={entry.role}
                 onChange={(e) => updateTimeline(i, "role", e.target.value)}
@@ -577,7 +577,7 @@ export function AboutEditor() {
                       type="button"
                       onClick={() => removeHighlight(i, j)}
                       disabled={entry.highlights.length <= 1}
-                      className="ad-link"
+                      className="dk-link"
               data-tone="danger"
                     >
                       Remove
@@ -587,7 +587,7 @@ export function AboutEditor() {
                 <button
                   type="button"
                   onClick={() => addHighlight(i)}
-                  className="ad-link"
+                  className="dk-link"
                 >
                   + Add highlight
                 </button>
@@ -598,7 +598,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addTimeline}
-          className="ad-link"
+          className="dk-link"
         >
           + Add experience
         </button>
@@ -608,9 +608,9 @@ export function AboutEditor() {
         {skillCategories.map(([category, items], i) => (
           <div
             key={`${category}-${i}`}
-            className="ad-sub space-y-3"
+            className="dk-sub space-y-3"
           >
-            <div className="ad-sub-head">
+            <div className="dk-sub-head">
               <input
                 value={category}
                 onChange={(e) => updateSkillCategory(i, e.target.value)}
@@ -620,7 +620,7 @@ export function AboutEditor() {
               <button
                 type="button"
                 onClick={() => removeSkillCategory(category)}
-                className="ad-link"
+                className="dk-link"
                 data-tone="danger"
               >
                 Remove
@@ -637,7 +637,7 @@ export function AboutEditor() {
         <button
           type="button"
           onClick={addSkillCategory}
-          className="ad-link"
+          className="dk-link"
         >
           + Add category
         </button>

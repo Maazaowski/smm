@@ -112,16 +112,16 @@ export function AnalyticsTab({
     <>
       <SectionSlug tab="analytics" fact={fact} />
 
-      <div className="ad-bar">
+      <div className="dk-bar">
         <div>
-          <h1 className="ad-title">Numbers with a source</h1>
+          <h1 className="dk-title">Numbers with a source</h1>
           <p>
             Views are deduplicated per reader per essay. Reactions are one per
             reader per kind. Neither counts you while you are signed in here
             unless you open the essay in another browser.
           </p>
         </div>
-        <div className="ad-actions">
+        <div className="dk-actions">
           <button type="button" className="sg-cta" onClick={onReload} disabled={loading}>
             {loading ? "…" : "Refresh"}
           </button>
@@ -129,7 +129,7 @@ export function AnalyticsTab({
       </div>
 
       {error && (
-        <div className="ad-notice" data-tone="bad" role="alert">
+        <div className="dk-notice" data-tone="bad" role="alert">
           <span>{error}</span>
         </div>
       )}
@@ -139,7 +139,7 @@ export function AnalyticsTab({
       {data && (
         <>
           {!data.tracking && (
-            <div className="ad-notice" data-tone="warn" role="status">
+            <div className="dk-notice" data-tone="warn" role="status">
               <span>
                 Redis is not configured, so nothing is being counted. Set
                 UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to turn
@@ -148,7 +148,7 @@ export function AnalyticsTab({
             </div>
           )}
 
-          <div className="sg-record ad-stats">
+          <div className="sg-record dk-stats">
             <div className="sg-stat">
               <Counter to={data.totalViews} />
               <span className="sg-stat-k">Views, all time</span>
@@ -176,9 +176,9 @@ export function AnalyticsTab({
             </div>
           </div>
 
-          <section className="ad-panel ad-chart" aria-label="Views over the last 30 days">
-            <div className="ad-chart-head">
-              <h2 className="ad-panel-h">Views · last 30 days</h2>
+          <section className="dk-panel dk-chart" aria-label="Views over the last 30 days">
+            <div className="dk-chart-head">
+              <h2 className="dk-panel-h">Views · last 30 days</h2>
               <span className="sg-micro">
                 {data.dailyViews.reduce((s, d) => s + d.views, 0).toLocaleString()} in
                 the window
@@ -220,13 +220,13 @@ export function AnalyticsTab({
             </ResponsiveContainer>
           </section>
 
-          <section className="ad-panel" aria-label="Views and reactions per essay">
-            <div className="ad-chart-head">
-              <h2 className="ad-panel-h">Per essay</h2>
+          <section className="dk-panel" aria-label="Views and reactions per essay">
+            <div className="dk-chart-head">
+              <h2 className="dk-panel-h">Per essay</h2>
               <span className="sg-micro">sorted by views</span>
             </div>
-            <div className="ad-table-wrap">
-              <table className="ad-table">
+            <div className="dk-table-wrap">
+              <table className="dk-table">
                 <thead>
                   <tr>
                     <th scope="col">Essay</th>
@@ -258,7 +258,7 @@ export function AnalyticsTab({
                             {post.title}
                           </Link>
                           {post.draft && (
-                            <span className="ad-tag" data-tone="draft" style={{ marginLeft: 8 }}>
+                            <span className="dk-tag" data-tone="draft" style={{ marginLeft: 8 }}>
                               Draft
                             </span>
                           )}

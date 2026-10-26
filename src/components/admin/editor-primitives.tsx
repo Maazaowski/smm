@@ -12,13 +12,13 @@ import { useState } from "react";
  * utility (`w-1/3`, `h-96`) without a wrapper per field.
  */
 
-export const inputClass = "ad-field";
+export const inputClass = "dk-field";
 
-export const textareaClass = "ad-field ad-textarea";
+export const textareaClass = "dk-field dk-textarea";
 
-export const selectClass = "ad-field ad-select";
+export const selectClass = "dk-field dk-select";
 
-export const labelClass = "ad-label";
+export const labelClass = "dk-label";
 
 export function Section({
   title,
@@ -32,19 +32,19 @@ export function Section({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="ad-panel">
+    <section className="dk-panel">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="ad-panel-toggle"
+        className="dk-panel-toggle"
         aria-expanded={open}
       >
-        <h2 className="ad-panel-h">{title}</h2>
+        <h2 className="dk-panel-h">{title}</h2>
         <span className="sg-micro" aria-hidden="true">
           {open ? "−" : "+"}
         </span>
       </button>
-      {open && <div className="ad-panel-body space-y-4">{children}</div>}
+      {open && <div className="dk-panel-body space-y-4">{children}</div>}
     </section>
   );
 }
@@ -78,7 +78,7 @@ export function RowControls({
         type="button"
         onClick={() => onMove(-1)}
         disabled={index === 0}
-        className="ad-link"
+        className="dk-link"
         aria-label={`Move ${label} up`}
       >
         ↑
@@ -87,7 +87,7 @@ export function RowControls({
         type="button"
         onClick={() => onMove(1)}
         disabled={index === length - 1}
-        className="ad-link"
+        className="dk-link"
         aria-label={`Move ${label} down`}
       >
         ↓
@@ -95,7 +95,7 @@ export function RowControls({
       <button
         type="button"
         onClick={onRemove}
-        className="ad-link"
+        className="dk-link"
         data-tone="danger"
       >
         Remove

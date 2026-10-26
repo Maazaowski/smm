@@ -41,19 +41,19 @@ export function AdminLogin() {
   };
 
   return (
-    <div className="ad-login">
-      <div className="ad-login-box">
-        <span className="ad-wordmark">
+    <div className="dk-login">
+      <div className="dk-login-box">
+        <span className="dk-wordmark">
           <b>Maaz</b>
           <span className="sg-micro">/ desk</span>
         </span>
         <form onSubmit={handleSubmit} noValidate>
-          <label className="ad-label" htmlFor="ad-password">
+          <label className="dk-label" htmlFor="dk-password">
             Password
           </label>
           <input
-            id="ad-password"
-            className="ad-field ad-mono"
+            id="dk-password"
+            className="dk-field dk-mono"
             type="password"
             value={password}
             onChange={(e) => {
@@ -63,11 +63,11 @@ export function AdminLogin() {
             autoComplete="current-password"
             autoFocus
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? "ad-password-err" : undefined}
+            aria-describedby={error ? "dk-password-err" : undefined}
             data-invalid={error ? "true" : undefined}
           />
           {error && (
-            <span className="sg-error sg-mono" id="ad-password-err" role="alert">
+            <span className="sg-error sg-mono" id="dk-password-err" role="alert">
               {error}
             </span>
           )}

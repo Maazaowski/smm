@@ -32,7 +32,7 @@ test.describe("desk, signed out", () => {
   });
 
   test("admin APIs refuse without a session", async ({ request }) => {
-    for (const path of ["/api/admin/analytics", "/api/admin/posts"]) {
+    for (const path of ["/api/admin/analytics", "/api/admin/posts", "/api/admin/media"]) {
       const res = await request.get(path);
       expect(res.status(), path).toBe(401);
     }
@@ -44,7 +44,7 @@ test.describe("desk, signed out", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
     // Scoped to the form's own error line: the Next dev overlay also mounts
     // a role="alert" element, which a bare getByRole would pick up.
-    await expect(page.locator("#ad-password-err")).toContainText(/not the password|too many/i);
+    await expect(page.locator("#dk-password-err")).toContainText(/not the password|too many/i);
   });
 });
 
@@ -72,9 +72,9 @@ test.describe("desk, signed in", () => {
 
   test("the essays list shows a view count per row", async ({ page }) => {
     await page.goto("/admin");
-    const rows = page.locator(".ad-row");
+    const rows = page.locator(".dk-row");
     await expect(rows.first()).toBeVisible();
-    await expect(rows.first().locator(".ad-fig-v")).not.toHaveText("–");
+    await expect(rows.first().locator(".dk-fig-v")).not.toHaveText("–");
   });
 
   test("analytics returns one shape whether or not Redis is configured", async ({
@@ -93,7 +93,7 @@ test.describe("desk, signed in", () => {
 
   test("delete asks before it acts, inline", async ({ page }) => {
     await page.goto("/admin");
-    await page.locator(".ad-row").first().getByRole("button", { name: "Delete" }).click();
+    await page.locator(".dk-row").first().getByRole("button", { name: "Delete" }).click();
     const dialog = page.getByRole("alertdialog");
     await expect(dialog).toContainText(/Delete/);
     await dialog.getByRole("button", { name: "Cancel" }).click();

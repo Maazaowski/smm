@@ -180,17 +180,17 @@ export function TestimonialsEditor() {
 
     return (
       <div className="space-y-4">
-        <div className="ad-bar">
-          <h1 className="ad-title">
+        <div className="dk-bar">
+          <h1 className="dk-title">
             {editing.id ? "Edit reference" : "New reference"}
           </h1>
-          <button type="button" onClick={() => setEditing(null)} className="ad-link">
+          <button type="button" onClick={() => setEditing(null)} className="dk-link">
             ← Back
           </button>
         </div>
 
         {error && (
-          <div className="ad-notice" data-tone="bad" role="alert">
+          <div className="dk-notice" data-tone="bad" role="alert">
             <span>{error}</span>
           </div>
         )}
@@ -205,7 +205,7 @@ export function TestimonialsEditor() {
           />
         </label>
 
-        <div className="ad-grid-3">
+        <div className="dk-grid-3">
           <label className="block space-y-1">
             <span className={labelClass}>Name</span>
             <input
@@ -246,12 +246,12 @@ export function TestimonialsEditor() {
             }
             placeholder="https://linkedin.com/in/... — where this can be verified"
           />
-          <span className="ad-help">
+          <span className="dk-help">
             A reference nobody can check is worth less than no reference.
           </span>
         </label>
 
-        <label className="ad-check">
+        <label className="dk-check">
           <input
             type="checkbox"
             checked={!editing.draft}
@@ -277,16 +277,16 @@ export function TestimonialsEditor() {
 
   return (
     <div className="space-y-4">
-      <div className="ad-bar">
+      <div className="dk-bar">
         <div>
-          <h1 className="ad-title">What they said afterwards</h1>
+          <h1 className="dk-title">What they said afterwards</h1>
           <p>
             {rows.length} reference{rows.length === 1 ? "" : "s"} ·{" "}
             {rows.filter((r) => !r.draft).length} live. New entries are drafts
             until you publish them.
           </p>
         </div>
-        <div className="ad-actions">
+        <div className="dk-actions">
           <button
             type="button"
             onClick={() => setEditing({ ...EMPTY, sortOrder: rows.length })}
@@ -299,49 +299,49 @@ export function TestimonialsEditor() {
       </div>
 
       {error && (
-          <div className="ad-notice" data-tone="bad" role="alert">
+          <div className="dk-notice" data-tone="bad" role="alert">
             <span>{error}</span>
           </div>
         )}
 
       {loading ? (
-        <div className="ad-rows" aria-hidden="true">
+        <div className="dk-rows" aria-hidden="true">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="ad-skeleton" />
+            <div key={i} className="dk-skeleton" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="ad-empty">
+        <div className="dk-empty">
           No references yet. Ask two former colleagues and one client for a
           sentence about a specific outcome.
         </div>
       ) : (
-        <div className="ad-rows">
+        <div className="dk-rows">
           {rows.map((t, i) => (
             <article
               key={t.id}
-              className="ad-row"
+              className="dk-row"
               style={{ gridTemplateColumns: "minmax(0, 1fr) auto" }}
             >
                 <div className="min-w-0">
-                  <p className="ad-row-d" style={{ color: "var(--text)", fontSize: 14.5 }}>
+                  <p className="dk-row-d" style={{ color: "var(--text)", fontSize: 14.5 }}>
                     &ldquo;{t.quote.slice(0, 140)}
                     {t.quote.length > 140 ? "…" : ""}&rdquo;
                   </p>
-                  <div className="ad-row-meta">
-                    <span className="ad-row-r">
+                  <div className="dk-row-meta">
+                    <span className="dk-row-r">
                       {t.author} · {t.role}, {t.company}
                     </span>
                     {t.draft ? <Tag tone="draft">Draft</Tag> : <Tag tone="live">Live</Tag>}
                     {t.sourceUrl ? <Tag>Source ✓</Tag> : <Tag tone="warn">No source</Tag>}
                   </div>
                 </div>
-                <div className="ad-row-actions">
+                <div className="dk-row-actions">
                   <button
                     type="button"
                     onClick={() => reorder(i, -1)}
                     disabled={i === 0}
-                    className="ad-link"
+                    className="dk-link"
                     aria-label={`Move ${t.author} up`}
                   >
                     ↑
@@ -350,7 +350,7 @@ export function TestimonialsEditor() {
                     type="button"
                     onClick={() => reorder(i, 1)}
                     disabled={i === rows.length - 1}
-                    className="ad-link"
+                    className="dk-link"
                     aria-label={`Move ${t.author} down`}
                   >
                     ↓
@@ -358,7 +358,7 @@ export function TestimonialsEditor() {
                   <button
                     type="button"
                     onClick={() => togglePublish(t)}
-                    className="ad-link"
+                    className="dk-link"
                     data-tone={t.draft ? "live" : undefined}
                   >
                     {t.draft ? "Publish" : "Unpublish"}
@@ -377,14 +377,14 @@ export function TestimonialsEditor() {
                         sortOrder: t.sortOrder,
                       })
                     }
-                    className="ad-link"
+                    className="dk-link"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => remove(t)}
-                    className="ad-link"
+                    className="dk-link"
                     data-tone="danger"
                   >
                     Delete

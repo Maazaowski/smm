@@ -23,21 +23,21 @@ export function AdminHead({
   onLogout: () => void;
 }) {
   return (
-    <header className="ad-head">
-      <div className="ad-head-l">
-        <Link href="/admin" className="ad-wordmark" aria-label="Desk home">
+    <header className="dk-head">
+      <div className="dk-head-l">
+        <Link href="/admin" className="dk-wordmark" aria-label="Desk home">
           <b>Maaz</b>
           <span className="sg-micro">/ desk</span>
         </Link>
         <Clock />
       </div>
 
-      <nav className="ad-tabs" aria-label="Sections">
+      <nav className="dk-tabs" aria-label="Sections">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={tabHref(t.id)}
-            className="ad-tab"
+            className="dk-tab"
             data-current={tab === t.id ? "true" : undefined}
             aria-current={tab === t.id ? "page" : undefined}
           >
@@ -46,8 +46,8 @@ export function AdminHead({
         ))}
       </nav>
 
-      <div className="ad-head-r">
-        <a className="ad-link" href="/" target="_blank" rel="noopener noreferrer">
+      <div className="dk-head-r">
+        <a className="dk-link" href="/" target="_blank" rel="noopener noreferrer">
           view site ↗
         </a>
         <button type="button" className="sg-cta" onClick={onLogout}>
@@ -128,13 +128,13 @@ export function Notice({
   if (!notice) return null;
   return (
     <div
-      className="ad-notice"
+      className="dk-notice"
       data-tone={notice.tone}
       role={notice.confirm ? "alertdialog" : "status"}
       aria-live="polite"
     >
       <span>{notice.text}</span>
-      <span className="ad-notice-actions">
+      <span className="dk-notice-actions">
         {notice.confirm && (
           <button
             type="button"
@@ -145,7 +145,7 @@ export function Notice({
             {notice.confirm.label}
           </button>
         )}
-        <button type="button" className="ad-link" onClick={onDismiss}>
+        <button type="button" className="dk-link" onClick={onDismiss}>
           {notice.confirm ? "Cancel" : "Dismiss"}
         </button>
       </span>
@@ -161,7 +161,7 @@ export function Tag({
   children: React.ReactNode;
 }) {
   return (
-    <span className="ad-tag" data-tone={tone}>
+    <span className="dk-tag" data-tone={tone}>
       {children}
     </span>
   );
@@ -169,9 +169,9 @@ export function Tag({
 
 export function Skeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="ad-rows" aria-hidden="true">
+    <div className="dk-rows" aria-hidden="true">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="ad-skeleton" />
+        <div key={i} className="dk-skeleton" />
       ))}
     </div>
   );

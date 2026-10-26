@@ -673,6 +673,72 @@
   margin: 2em 0;
 }
 
+/* ---- placed figures (the <Figure> component) ----------------------- */
+
+.sg-prose .fn-figure-wrap {
+  margin: 2em 0;
+}
+
+.sg-prose .fn-figure-wrap .fn-figure {
+  width: 100%;
+  margin: 0;
+}
+
+.sg-prose .fn-figcaption {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--dim);
+  margin-top: 8px;
+}
+
+/* A little past the column on both sides, into the gutters. */
+.sg-prose .fn-figure-wrap[data-align="wide"] {
+  --fn-bleed: clamp(0px, 3vw, 32px);
+  width: calc(100% + 2 * var(--fn-bleed));
+  margin-left: calc(-1 * var(--fn-bleed));
+}
+
+.sg-prose .fn-figure-wrap[data-align="left"],
+.sg-prose .fn-figure-wrap[data-align="right"] {
+  width: var(--fn-figure-w, 45%);
+  margin-top: 0.35em;
+  margin-bottom: 1em;
+}
+
+.sg-prose .fn-figure-wrap[data-align="left"] {
+  float: left;
+  margin-right: 1.6em;
+}
+
+.sg-prose .fn-figure-wrap[data-align="right"] {
+  float: right;
+  margin-left: 1.6em;
+}
+
+.sg-prose .fn-figure-wrap[data-align="center"] {
+  width: var(--fn-figure-w, 70%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* A float never runs under the next section's heading. */
+.sg-prose > h2,
+.sg-prose > h3 {
+  clear: both;
+}
+
+@media (max-width: 640px) {
+  .sg-prose .fn-figure-wrap[data-align="left"],
+  .sg-prose .fn-figure-wrap[data-align="right"],
+  .sg-prose .fn-figure-wrap[data-align="center"] {
+    float: none;
+    width: 100%;
+    margin: 2em 0;
+  }
+}
+
 .sg-read-nav {
   margin-top: clamp(56px, 8vw, 96px);
 }
