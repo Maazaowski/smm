@@ -8,6 +8,7 @@ import type { MDXComponents } from "mdx/types";
 import type { HTMLAttributes } from "react";
 import { MermaidDiagram } from "@/components/site/mermaid";
 import { CodeBlock } from "@/components/site/code-block";
+import { Figure } from "@/components/site/figure";
 
 /**
  * MDX pipeline for the prototype.
@@ -122,6 +123,9 @@ const protoComponents: MDXComponents = {
     // eslint-disable-next-line @next/next/no-img-element
     <img {...props} alt={alt || ""} loading="lazy" className="fn-figure" />
   ),
+  // Written by the desk's image tool: an image with a caption, a float or a
+  // width, which Markdown's image syntax has no way to carry.
+  Figure,
 };
 
 export async function renderProtoMDX(source: string) {

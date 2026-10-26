@@ -32,7 +32,7 @@ test.describe("desk, signed out", () => {
   });
 
   test("admin APIs refuse without a session", async ({ request }) => {
-    for (const path of ["/api/admin/analytics", "/api/admin/posts"]) {
+    for (const path of ["/api/admin/analytics", "/api/admin/posts", "/api/admin/media"]) {
       const res = await request.get(path);
       expect(res.status(), path).toBe(401);
     }

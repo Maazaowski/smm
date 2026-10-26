@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AboutEditor } from "@/components/admin/about-editor";
+import { ImageTool } from "@/components/admin/image-tool";
 import { ProjectsEditor } from "@/components/admin/projects-editor";
 import { TestimonialsEditor } from "@/components/admin/testimonials-editor";
 import { AnalyticsTab, useAnalytics } from "@/components/admin/analytics";
@@ -126,6 +127,31 @@ function PostsSection({
   const [isDraft, setIsDraft] = useState(false);
   const [body, setBody] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Images. The tool writes MDX at the caret; a file pasted or dropped into
+  // the body goes to the tool first, so the editing step is never skipped.
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const [incomingImage, setIncomingImage] = useState<File | null>(null);
+  const consumeIncomingImage = useCallback(() => setIncomingImage(null), []);
+
+  const insertAtCursor = useCallback((snippet: string) => {
+    const el = bodyRef.current;
+    setBody((prev) => {
+      const start = el ? el.selectionStart : prev.length;
+      const end = el ? el.selectionEnd : prev.length;
+      const before = prev.slice(0, start).replace(/\n*$/, "");
+      const after = prev.slice(end).replace(/^\n*/, "");
+      const lead = before ? "\n\n" : "";
+      const next = `${before}${lead}${snippet}\n\n${after}`;
+      const caret = before.length + lead.length + snippet.length + 2;
+      requestAnimationFrame(() => {
+        if (!el) return;
+        el.focus();
+        el.setSelectionRange(caret, caret);
+      });
+      return next;
+    });
+  }, []);
 
   // Everything the editor holds. Serialized for the draft guard so an
   // accidental refresh or a stray "Back" no longer destroys unsaved writing.
@@ -472,14 +498,41 @@ function PostsSection({
               </label>
               <textarea
                 id="post-body"
+                ref={bodyRef}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                placeholder="## headings become the contents rail. ```mermaid blocks become diagrams."
+                onPaste={(e) => {
+                  const file = Array.from(e.clipboardData.files).find((f) =>
+                    f.type.startsWith("image/")
+                  );
+                  if (!file) return;
+                  e.preventDefault();
+                  setIncomingImage(file);
+                }}
+                onDragOver={(e) => {
+                  if (Array.from(e.dataTransfer.types).includes("Files")) e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  const file = Array.from(e.dataTransfer.files).find((f) =>
+                    f.type.startsWith("image/")
+                  );
+                  if (!file) return;
+                  e.preventDefault();
+                  setIncomingImage(file);
+                }}
+                placeholder="## headings become the contents rail. ```mermaid blocks become diagrams. Paste or drop an image to add one."
                 className={`${textareaClass} dk-mono`}
                 style={{ minHeight: 480 }}
                 spellCheck
               />
             </div>
+
+            <ImageTool
+              postSlug={editSlug ?? (title ? slugify(title) : "drafts")}
+              incomingFile={incomingImage}
+              onIncomingConsumed={consumeIncomingImage}
+              onInsert={insertAtCursor}
+            />
 
             <div className="dk-actions">
               <button

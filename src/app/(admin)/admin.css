@@ -843,3 +843,325 @@
   gap: 12px;
   margin-top: 22px;
 }
+
+/* ========================================================================
+   IMAGE TOOL — crop, turn, size, adjust, place
+   ======================================================================== */
+
+.dk-imgtool {
+  margin-top: 4px;
+}
+
+.dk-imgtool-work {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.dk-imgtool-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .dk-imgtool-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dk-imgtool-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.dk-imgtool-place {
+  display: grid;
+  gap: 12px;
+}
+
+/* Drop zone */
+.dk-drop {
+  margin-top: 14px;
+  border: 1px dashed var(--edge);
+  background: var(--void);
+  padding: clamp(24px, 4vw, 40px);
+  text-align: center;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.dk-drop p {
+  margin: 0;
+}
+
+.dk-drop[data-over="true"] {
+  border-color: var(--white);
+  background: var(--raise);
+}
+
+/* Segmented buttons */
+.dk-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.dk-seg button {
+  appearance: none;
+  border: 0;
+  background: var(--near);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 11px;
+  min-height: 30px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.dk-seg button:hover:not(:disabled) {
+  color: var(--white);
+}
+
+.dk-seg button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dk-seg button[aria-pressed="true"],
+.dk-seg button[aria-selected="true"] {
+  background: var(--white);
+  color: var(--void);
+}
+
+.dk-seg[role="tablist"] {
+  margin-bottom: 4px;
+}
+
+/* Crop stage */
+.dk-crop-frame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+  background:
+    repeating-conic-gradient(var(--raise) 0% 25%, var(--void) 0% 50%) 0 0 / 16px 16px;
+}
+
+.dk-crop-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.dk-crop-frame .dk-help {
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+
+.dk-crop-overlay {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+.dk-crop-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--white);
+  /* Everything outside the box is dimmed by one huge shadow. */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  cursor: move;
+}
+
+.dk-crop-box::before,
+.dk-crop-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* Rule of thirds. */
+.dk-crop-box::before {
+  border-left: 1px solid var(--white);
+  border-right: 1px solid var(--white);
+  left: 33.333%;
+  right: 33.333%;
+}
+
+.dk-crop-box::after {
+  border-top: 1px solid var(--white);
+  border-bottom: 1px solid var(--white);
+  top: 33.333%;
+  bottom: 33.333%;
+}
+
+.dk-crop-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  border: 1px solid var(--void);
+  box-sizing: border-box;
+}
+
+.dk-crop-handle[data-corner="nw"] { top: -7px; left: -7px; cursor: nwse-resize; }
+.dk-crop-handle[data-corner="se"] { bottom: -7px; right: -7px; cursor: nwse-resize; }
+.dk-crop-handle[data-corner="ne"] { top: -7px; right: -7px; cursor: nesw-resize; }
+.dk-crop-handle[data-corner="sw"] { bottom: -7px; left: -7px; cursor: nesw-resize; }
+
+/* Result preview, laid out the way the placement will read in the essay. */
+.dk-result {
+  border: 1px solid var(--line-2);
+  background: var(--void);
+  padding: 14px;
+  min-height: 120px;
+  overflow: hidden;
+}
+
+.dk-result img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.dk-result[data-align="wide"] {
+  padding: 14px 4px;
+}
+
+.dk-result[data-align="left"] img,
+.dk-result[data-align="right"] img {
+  width: 45%;
+}
+
+.dk-result[data-align="left"] img {
+  float: left;
+  margin: 0 14px 8px 0;
+}
+
+.dk-result[data-align="right"] img {
+  float: right;
+  margin: 0 0 8px 14px;
+}
+
+.dk-result[data-align="center"] img {
+  width: 70%;
+  margin: 0 auto 10px;
+}
+
+.dk-result-text {
+  display: block;
+}
+
+.dk-result-text span {
+  display: block;
+  height: 7px;
+  background: var(--line);
+  margin: 0 0 7px;
+}
+
+.dk-result-text span:nth-child(odd) {
+  width: 92%;
+}
+
+.dk-result-text span:nth-child(3n) {
+  width: 70%;
+}
+
+.dk-result[data-align="center"] .dk-result-text span {
+  width: auto;
+}
+
+/* Sliders */
+.dk-ranges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 16px;
+  margin-bottom: 8px;
+}
+
+.dk-range {
+  display: grid;
+  gap: 4px;
+}
+
+.dk-range-l {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.dk-range input[type="range"] {
+  width: 100%;
+  accent-color: var(--white);
+  margin: 0;
+}
+
+.dk-range input[type="range"]:disabled {
+  opacity: 0.4;
+}
+
+/* Library */
+.dk-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 8px;
+}
+
+.dk-thumb {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--void);
+  padding: 6px;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  transition: border-color 0.15s var(--ease);
+}
+
+.dk-thumb:hover {
+  border-color: var(--edge);
+}
+
+.dk-thumb[aria-pressed="true"] {
+  border-color: var(--white);
+}
+
+.dk-thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background:
+    repeating-conic-gradient(var(--raise) 0% 25%, var(--void) 0% 50%) 0 0 / 12px 12px;
+}
+
+.dk-thumb-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
