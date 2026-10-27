@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth";
 import { redis } from "@/lib/redis";
-import { getPostBySlug } from "@/lib/posts";
-import { sendEmailBatch, emailLayout } from "@/lib/email";
-import { SITE } from "@/lib/constants";
+import { getAllPosts, getPostBySlug } from "@/lib/posts";
+import { sendEmailBatch } from "@/lib/email";
+import { newEssayEmail } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -66,27 +66,21 @@ export async function POST(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ ok: true, sent: 0 });
   }
 
-  const url = `${SITE.url}/blog/${slug}`;
-  const html = emailLayout(`
-    <p style="margin: 0 0 4px; color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">
-      ${post.frontmatter.category}
-    </p>
-    <h2 style="margin: 0 0 12px;">${escapeHtml(post.frontmatter.title)}</h2>
-    <p style="margin: 0 0 20px;">${escapeHtml(post.frontmatter.description)}</p>
-    <p style="margin: 0 0 16px;">
-      <a href="${url}" style="display: inline-block; background: #14b8a6; color: #ffffff; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-size: 14px;">
-        Read the post
-      </a>
-    </p>
-  `);
-
-  const subject = post.frontmatter.title;
+  // [NN] on the slug line: this essay's position among the published ones,
+  // oldest first. Unknown (null) renders as [--], the OG card's convention.
+  const published = await getAllPosts().catch(() => [] as Awaited<ReturnType<typeof getAllPosts>>);
+  const idx = published.findIndex((p) => p.slug === slug);
+  const issue = idx === -1 ? null : published.length - idx;
 
   try {
     let sent = 0;
     for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
       const chunk = subscribers.slice(i, i + BATCH_SIZE);
-      await sendEmailBatch(chunk.map((to) => ({ to, subject, html })));
+      // Rendered once per recipient: the unsubscribe link and List-Unsubscribe
+      // headers are signed for that address, so no two emails are identical.
+      await sendEmailBatch(
+        chunk.map((to) => ({ to, ...newEssayEmail(post, { issue, to }) }))
+      );
       sent += chunk.length;
       // Stay under Resend's request-rate limit between batches.
       if (i + BATCH_SIZE < subscribers.length) {
@@ -109,12 +103,4 @@ export async function POST(_request: Request, { params }: RouteContext) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }

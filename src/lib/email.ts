@@ -4,6 +4,10 @@ interface EmailMessage {
   to: string;
   subject: string;
   html: string;
+  /** Plain-text alternative. Improves deliverability and is what a screen reader gets. */
+  text?: string;
+  /** Extra SMTP headers, e.g. List-Unsubscribe. */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -11,7 +15,13 @@ interface EmailMessage {
  * throwing) when RESEND_API_KEY is not configured, so callers can treat email
  * as best-effort. Throws on an actual Resend API error.
  */
-export async function sendEmail({ to, subject, html }: EmailMessage): Promise<boolean> {
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+  headers,
+}: EmailMessage): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
 
@@ -27,6 +37,8 @@ export async function sendEmail({ to, subject, html }: EmailMessage): Promise<bo
       reply_to: SITE.author.email,
       subject,
       html,
+      text,
+      headers,
     }),
   });
 
@@ -36,11 +48,7 @@ export async function sendEmail({ to, subject, html }: EmailMessage): Promise<bo
   return true;
 }
 
-interface BatchEmailMessage {
-  to: string;
-  subject: string;
-  html: string;
-}
+type BatchEmailMessage = EmailMessage;
 
 /**
  * Send up to 100 distinct emails in a single Resend batch request. Each
@@ -66,6 +74,8 @@ export async function sendEmailBatch(messages: BatchEmailMessage[]): Promise<boo
         reply_to: SITE.author.email,
         subject: m.subject,
         html: m.html,
+        text: m.text,
+        headers: m.headers,
       }))
     ),
   });
@@ -78,16 +88,4 @@ export async function sendEmailBatch(messages: BatchEmailMessage[]): Promise<boo
 
 export function emailFrom(): string {
   return process.env.NEWSLETTER_FROM ?? `${SITE.name} <hello@maazaowski.com>`;
-}
-
-/** Wrap body content in the shared newsletter shell (light background, signature). */
-export function emailLayout(inner: string): string {
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; color: #0f172a; line-height: 1.6;">
-      ${inner}
-      <p style="margin: 24px 0 0; color: #64748b; font-size: 14px;">
-        ${SITE.author.name}
-      </p>
-    </div>
-  `;
 }
