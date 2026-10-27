@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { SITE } from "@/lib/constants";
-import { sendEmail, emailLayout } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
+import { welcomeEmail } from "@/lib/email-templates";
+import { getAllPosts } from "@/lib/posts";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,20 +48,12 @@ export async function POST(request: NextRequest) {
 }
 
 async function sendWelcomeEmail(email: string) {
-  await sendEmail({
-    to: email,
-    subject: `You're subscribed to ${SITE.name}`,
-    html: emailLayout(`
-      <h2 style="margin: 0 0 12px;">Thanks for subscribing.</h2>
-      <p style="margin: 0 0 16px;">
-        You'll get an email when I publish something new. I write about
-        building software, deploying AI agents, and the things I learn
-        along the way.
-      </p>
-      <p style="margin: 0 0 16px;">
-        In the meantime, the latest posts are at
-        <a href="${SITE.url}/blog" style="color: #14b8a6;">${SITE.url.replace(/^https?:\/\//, "")}/blog</a>.
-      </p>
-    `),
+  // The welcome lists the three latest essays so the first email is worth
+  // opening. If the DB is down the list is simply empty; the email still goes.
+  const published = await getAllPosts().catch(() => [] as Awaited<ReturnType<typeof getAllPosts>>);
+  const { subject, html, text, headers } = welcomeEmail({
+    latest: published.slice(0, 3),
+    total: published.length,
   });
+  await sendEmail({ to: email, subject, html, text, headers });
 }
